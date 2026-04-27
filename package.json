@@ -1,0 +1,28 @@
+{
+  "name": "cx-fusion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "/usr/local/bin/node node_modules/vite/bin/vite.js",
+    "server": "node local-server.js",
+    "build": "/usr/local/bin/node node_modules/vite/bin/vite.js build",
+    "preview": "/usr/local/bin/node node_modules/vite/bin/vite.js preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "lucide-react": "^0.453.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.13.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "@vitest/coverage-v8": "^4.1.5",
+    "jsdom": "^29.1.0",
+    "vite": "^5.4.10",
+    "vitest": "^4.1.5"
+  }
+}

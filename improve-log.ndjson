@@ -1,0 +1,6 @@
+{"type":"test_error","message":"Test-Fehler beim Artikel-Overlay","context":{"url":"https://ppimedia.de/cx-fusion","page":"content"}}
+{"type":"cors_reader_failed","message":"All CORS proxies failed","context":{"url":"https://ppimedia.de/article"}}
+{"type":"cors_reader_failed","message":"All CORS proxies failed for reader view","context":{"url":"https://ppimedia.de/de/"},"page":"/"}
+{"type":"seo_audit_error","message":"SEO-Audit-Antwort konnte nicht verarbeitet werden.","context":{"domain":"herose.com"},"page":"/"}
+{"type":"seo_audit_error","message":"SEO-Audit-Antwort konnte nicht verarbeitet werden.","context":{"domain":"herose.com"},"page":"/"}
+{"type":"analyze_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.","context":{"domain":"braun-hamburg.de"},"page":"/","fingerprint":"analyze_error::Your credit balance is too low to access the Anthropic API. ::/","ua":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/1","ts":"2026-04-27T07:22:59.475Z"}

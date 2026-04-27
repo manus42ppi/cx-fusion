@@ -1,0 +1,212 @@
+{
+  "product": "cx-fusion / ppitalk AI Pro",
+  "tagline": "KI-gestützte Web-Intelligence-Plattform",
+  "targetUsers": "Marketing-Agenturen, SEO-Experten, Content-Manager, Wettbewerbsanalysten",
+  "techStack": "React 18, Vite, Cloudflare Pages, Anthropic Claude, Inline-Styles only",
+  "_implementedNote": "Die folgenden Features sind VOLLSTÄNDIG implementiert und dürfen NIEMALS als Lücke oder Quick Win erscheinen: SEO-Audit, SERP-Vorschau, Duplicate-Content-Erkennung, Broken-Link-Checker, Batch-Analyse, PDF-Export, Content-Analyse, On-Page-SEO-Checks, Link-Health-Tab",
+  "currentFeatures": [
+    {
+      "id": "domain-analyze",
+      "name": "Domain-Vollanalyse",
+      "desc": "PageRank, Tech-Stack (CMS/CDN/Analytics), Performance-Scores (PSI), WHOIS/Domain-Alter, Backlinks-Schätzung, KI-Insights",
+      "page": "AnalyzePage + ReportPage"
+    },
+    {
+      "id": "traffic-estimate",
+      "name": "Traffic-Schätzung (KI)",
+      "desc": "Monatliche Besucher, Quellen-Split (organisch/direkt/social/paid), Top-Länder, Bounce-Rate, Session-Dauer — alles KI-basiert",
+      "page": "ReportPage Tab: Besucher"
+    },
+    {
+      "id": "content-analysis",
+      "name": "Content-Analyse + SEO-Audit",
+      "desc": "Tonalität, Sentiment, Themen-Cluster, Konsistenz-Score, Ausreißer-Artikel, Stärken/Schwächen, RSS-Feed-Unterstützung. Tab 2: KI-gestützter SEO-Audit mit Score-Ring, 8 SEO-Checks (Meta, H1, Duplicate etc.)",
+      "page": "ContentPage (2 Tabs)"
+    },
+    {
+      "id": "seo-audit",
+      "name": "SEO-Audit (On-Page Checks)",
+      "desc": "KI-basierter SEO-Score (0-100), Kategorisierte Checks (Meta, Performance, Content, UX), Stärken & Schwächen, technische Empfehlungen",
+      "page": "ContentPage Tab: SEO-Audit"
+    },
+    {
+      "id": "serp-preview",
+      "name": "SERP-Vorschau",
+      "desc": "Google-Vorschau pro Seite: Titel + URL + Description, Desktop- und Mobile-Ansicht, Zeichenzähler (rot bei Überschreitung), alle Seiten der Domain",
+      "page": "ContentPage Tab: SEO-Audit → SERP-Vorschau-Sektion"
+    },
+    {
+      "id": "duplicate-content",
+      "name": "Duplicate-Content-Erkennung",
+      "desc": "Jaccard-Ähnlichkeit zwischen allen Seiten-Paaren, Markierung von Duplikaten ab 35% Ähnlichkeit, direkte Links zu den betroffenen URLs",
+      "page": "ContentPage Tab: SEO-Audit → Duplicate-Content-Sektion"
+    },
+    {
+      "id": "broken-link-checker",
+      "name": "Broken-Link-Checker",
+      "desc": "HEAD-Request-Batch-Check aller Links einer Domain, Status-Badges (OK/Broken/Timeout), Export als CSV/JSON, zusammenfassende Statistik",
+      "page": "ReportPage Tab: Link-Health"
+    },
+    {
+      "id": "batch-analyze",
+      "name": "Batch-Analyse (bis zu 50 Domains)",
+      "desc": "CSV-Upload oder Textarea für bis zu 50 Domains, sequenzielle /analyze-Abfragen mit Progress-Bar, Stopp-Button, konfigurierbarer Spaltenauswahl, CSV-Export",
+      "page": "BatchPage"
+    },
+    {
+      "id": "pdf-export",
+      "name": "PDF-Export & Daten-Export",
+      "desc": "Reports als JSON, CSV oder PDF (Browser-Print) exportieren, floating Export-Button mit Dropdown",
+      "page": "ReportPage (floating Export-Button)"
+    },
+    {
+      "id": "domain-compare",
+      "name": "Domain-Vergleich",
+      "desc": "Zwei Domains side-by-side: Traffic, SEO-Wert, PageRank, Absprungrate, Session-Dauer, organische Keywords",
+      "page": "ComparePage"
+    },
+    {
+      "id": "client-mgmt",
+      "name": "Kundenverwaltung",
+      "desc": "Domains speichern, Reports cachen, Schnellzugriff auf gespeicherte Analysen",
+      "page": "ClientsPage"
+    },
+    {
+      "id": "seo-report",
+      "name": "SEO-Analyse",
+      "desc": "Organische Keywords (KI-Schätzung), SEO-Wert/Monat, Backlink-Anzahl, Indexierte Seiten (Common Crawl)",
+      "page": "ReportPage Tab: SEO"
+    },
+    {
+      "id": "tech-detect",
+      "name": "Tech-Stack-Erkennung",
+      "desc": "CMS, CDN, Analytics-Tools, Frameworks, Shop-Systeme per HTTP-Header-Analyse",
+      "page": "ReportPage Tab: Technologie"
+    },
+    {
+      "id": "perf-score",
+      "name": "Performance-Score",
+      "desc": "Google PageSpeed Insights: Performance, Accessibility, SEO, Best Practices — Mobile + Desktop",
+      "page": "ReportPage Tab: Performance"
+    },
+    {
+      "id": "auto-improve",
+      "name": "Autonomes Verbesserungs-System",
+      "desc": "Error-Logging mit Fingerprinting/Deduplication, KI-Diagnose alle 3h, Code-Fix-Vorschläge mit Auto-Apply, Feature-Gap-Analyse mit Auto-Wiring, Circuit-Breaker, CORS-Proxy-Rotation",
+      "page": "ImprovePage"
+    },
+    {
+      "id": "feat-schema-validator",
+      "name": "Structured Data",
+      "desc": "Schema.org-Validierung & Rich-Snippet-Vorschau",
+      "page": "feat_feat-schema-validator.jsx",
+      "addedAt": "2026-04-27T05:46:40.712Z"
+    }
+  ],
+  "competitors": [
+    {
+      "name": "SimilarWeb",
+      "strengths": [
+        "Traffic-Daten (real)",
+        "Audience-Insights",
+        "Quellen-Analyse",
+        "Geographic split",
+        "App-Analyse",
+        "Browser-Extension"
+      ]
+    },
+    {
+      "name": "SEMrush",
+      "strengths": [
+        "Keyword-Recherche",
+        "Backlink-Audit",
+        "Rank-Tracking",
+        "Site-Audit (100+ Checks)",
+        "Content-Lücken",
+        "Wettbewerber-Keywords",
+        "PPC-Analyse"
+      ]
+    },
+    {
+      "name": "Ahrefs",
+      "strengths": [
+        "Backlink-Profil (größte DB)",
+        "Link-Intersect",
+        "Content-Explorer",
+        "Keyword-Difficulty",
+        "SERP-Analyse",
+        "Rank-Tracking"
+      ]
+    },
+    {
+      "name": "Ubersuggest",
+      "strengths": [
+        "Keyword-Ideen",
+        "Content-Ideen",
+        "Site-Audit",
+        "Backlinks",
+        "Traffic-Überblick",
+        "NLP-Analyse"
+      ]
+    },
+    {
+      "name": "SpyFu",
+      "strengths": [
+        "PPC-Spionage",
+        "Competitor-Keywords",
+        "AdWords-Verlauf",
+        "SEO-Klick-Prognosen"
+      ]
+    },
+    {
+      "name": "Wappalyzer",
+      "strengths": [
+        "Tech-Stack live",
+        "Email-Finder",
+        "Leadgenerierung per Technologie-Filter",
+        "Browser-Extension"
+      ]
+    },
+    {
+      "name": "BuiltWith",
+      "strengths": [
+        "Detaillierter Tech-Stack",
+        "E-Commerce-Erkennung",
+        "Historische Tech-Daten",
+        "Market-Share-Reports"
+      ]
+    },
+    {
+      "name": "Moz",
+      "strengths": [
+        "Domain Authority",
+        "Spam-Score",
+        "Link-Explorer",
+        "Keyword-Explorer",
+        "SERP-Features"
+      ]
+    },
+    {
+      "name": "Screaming Frog",
+      "strengths": [
+        "Crawl ganzer Websites",
+        "On-Page-SEO-Audit",
+        "Redirect-Ketten"
+      ]
+    }
+  ],
+  "knownGaps": [
+    "Keyword-Recherche mit Suchvolumen (echte Search-Volume-Daten via API)",
+    "Backlink-Profil (echte Links, nicht KI-Schätzung)",
+    "SERP-Position-Tracking (keyword rank over time)",
+    "Content-Lücken-Analyse (welche Keywords fehlen im Vergleich zu Konkurrenten)",
+    "E-Mail-Extraktion / Lead-Generierung (Kontaktdaten aus Websites extrahieren)",
+    "Browser-Extension (1-Klick-Analyse direkt im Browser)",
+    "API-Zugang für Entwickler (REST-API mit Key-Verwaltung)",
+    "Historische Trend-Daten (Traffic/Ranking-Verlauf über 12+ Monate)",
+    "Social-Media-Statistiken (Follower, Engagement, Posts der analysierten Domain)",
+    "Wettbewerber-Keywords (welche Keywords hat Konkurrent aber ich nicht)",
+    "Redirect-Ketten-Analyse (301/302-Ketten finden und visualisieren)",
+    "Schema.org / Structured-Data-Validierung"
+  ]
+}
