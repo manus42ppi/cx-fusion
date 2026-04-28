@@ -1,7 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { execSync } from "child_process";
+
+// Auto-version: 1.1.<git-commit-count> — bumps automatically on every deploy
+function getVersion() {
+  try {
+    const count = execSync("git rev-list --count HEAD", { encoding: "utf8" }).trim();
+    return `1.1.${count}`;
+  } catch {
+    return "1.1.0";
+  }
+}
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(getVersion()),
+  },
   plugins: [react()],
   test: {
     environment: "jsdom",

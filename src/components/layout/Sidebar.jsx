@@ -16,13 +16,13 @@ const NAV_GROUPS = [
     label: "Analyse",
     color: null,
     items: [
-      { id: "analyze",  label: "Website",            icon: Globe,      desc: "Vollständige Domain-Analyse" },
+      { id: "analyze",  label: "Website-Analyse",    icon: Globe,      desc: "Vollständige Domain-Analyse" },
       { id: "content",  label: "Content-Audit",       icon: BookText,   desc: "Ton · Sentiment · SEO-Audit" },
+      // ─── AUTO_NAV_START ─────────────────────────────────────────────────────
+      { id: "feat-schema-validator", label: "Structure-Audit", icon: Code2, desc: "Schema.org-Validierung & Rich-Snippet-Vorschau" },
+// ─── AUTO_NAV_END ───────────────────────────────────────────────────────
       { id: "compare",  label: "Website-Vergleich",  icon: GitCompare, desc: "Zwei Websites gegenüberstellen" },
       { id: "batch",    label: "Batch-Analyse",      icon: Layers,     desc: "Bis zu 50 Domains auf einmal" },
-      // ─── AUTO_NAV_START ─────────────────────────────────────────────────────
-      { id: "feat-schema-validator", label: "Structured Data", icon: Code2, desc: "Schema.org-Validierung & Rich-Snippet-Vorschau" },
-// ─── AUTO_NAV_END ───────────────────────────────────────────────────────
     ],
   },
   {
@@ -111,7 +111,9 @@ export default function Sidebar() {
           <div style={{ fontSize: 11, fontWeight: 600, color: C.accent, letterSpacing: ".02em" }}>
             Web Intelligence
           </div>
-          <div style={{ marginLeft: "auto", fontSize: 10, color: C.textMute, fontWeight: 500 }}>v2</div>
+          <div style={{ marginLeft: "auto", fontSize: 9, color: C.textMute, fontWeight: 600, fontVariantNumeric: "tabular-nums", letterSpacing: ".02em" }}>
+            {typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "1.1.0"}
+          </div>
         </div>
       </div>
 
