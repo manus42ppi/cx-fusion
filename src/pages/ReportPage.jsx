@@ -409,43 +409,44 @@ export default function ReportPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <Card style={{ padding: 20 }}>
             <SectionLabel icon={Users} color={C.accent}>Zielgruppe</SectionLabel>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
               {ai.category && <Badge color={C.info} bg={C.infoBg}>{ai.category}</Badge>}
               {ai.audienceType && <Badge color={C.warning} bg={C.warningBg}>{ai.audienceType}</Badge>}
-              {/* Data quality indicator */}
+              {/* Data quality indicator – tooltip-only, no clutter */}
               {(() => {
                 const dq = ai.dataQuality;
                 const conf = dq?.audienceConfidence || dq?.categoryConfidence;
                 const fetched = dq?.homepageFetched;
+                // Build tooltip text with homepage source details
+                const hp = r?.homepage;
+                const sourceParts = [];
+                if (hp?.title)       sourceParts.push(`Title: ${hp.title}`);
+                if (hp?.description) sourceParts.push(`Desc: ${hp.description.slice(0, 80)}…`);
+                if (hp?.h1s?.[0])    sourceParts.push(`H1: ${hp.h1s[0]}`);
+                const tooltipBase = sourceParts.length
+                  ? `Analysiert aus Homepage-Inhalt:\n${sourceParts.join("\n")}`
+                  : "Homepage konnte nicht abgerufen werden – KI-Schätzung";
+
                 if (fetched === false) return (
-                  <span title="Homepage konnte nicht abgerufen werden – Angaben sind Schätzungen" style={{ fontSize: 10, fontWeight: 700, color: "#d97706", background: "#fef3c7", border: "1px solid #fde68a", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
-                    ⚠ KI-Schätzung
+                  <span title={tooltipBase} style={{ fontSize: 10, fontWeight: 700, color: "#d97706", background: "#fef3c7", border: "1px solid #fde68a", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
+                    ⚠ Geschätzt
                   </span>
                 );
                 if (conf === "high") return (
-                  <span title="Basiert auf tatsächlichem Homepage-Inhalt" style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "#dcfce7", border: "1px solid #bbf7d0", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
-                    ✓ Verifiziert
+                  <span title={tooltipBase} style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "#dcfce7", border: "1px solid #bbf7d0", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
+                    ✓ Aus Seiteninhalt
                   </span>
                 );
                 if (conf === "medium") return (
-                  <span title="Basiert auf Homepage-Inhalt, aber nicht eindeutig" style={{ fontSize: 10, fontWeight: 700, color: "#d97706", background: "#fef3c7", border: "1px solid #fde68a", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
-                    ~ Plausibel
+                  <span title={tooltipBase} style={{ fontSize: 10, fontWeight: 700, color: "#d97706", background: "#fef3c7", border: "1px solid #fde68a", padding: "2px 8px", borderRadius: 99, cursor: "help" }}>
+                    ~ Teilweise ermittelt
                   </span>
                 );
                 return null;
               })()}
             </div>
-            {ai.audienceProfile && <p style={{ fontSize: 13, color: C.textMid, lineHeight: 1.65, margin: 0 }}>{ai.audienceProfile}</p>}
-            {/* Show raw homepage signals for transparency */}
-            {r?.homepage?.title && (
-              <div style={{ marginTop: 10, padding: "8px 10px", background: C.bg, borderRadius: T.rSm, border: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>Quelle: Homepage-Inhalt</div>
-                <div style={{ fontSize: 11, color: C.textSoft, lineHeight: 1.5 }}>
-                  <strong>Title:</strong> {r.homepage.title}
-                  {r.homepage.description && <><br /><strong>Description:</strong> {r.homepage.description.slice(0, 120)}{r.homepage.description.length > 120 ? "…" : ""}</>}
-                  {r.homepage.h1s?.[0] && <><br /><strong>H1:</strong> {r.homepage.h1s[0]}</>}
-                </div>
-              </div>
+            {ai.audienceProfile && (
+              <p style={{ fontSize: 13, color: C.textMid, lineHeight: 1.7, margin: 0 }}>{ai.audienceProfile}</p>
             )}
           </Card>
 

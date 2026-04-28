@@ -188,22 +188,30 @@ pagespeed: ${JSON.stringify(result.pagespeed)}
 topPages: ${JSON.stringify(result.topPages)}
 
 PFLICHTREGELN – diese gelten absolut:
-1. "category" und "audienceProfile" MÜSSEN auf dem tatsächlichen Homepage-Inhalt basieren (Title, Description, H1, H2). Ignoriere den Domain-Namen vollständig für diese Felder.
+1. "category" und "audienceProfile" MÜSSEN auf dem tatsächlichen Homepage-Inhalt basieren (Title, Description, H1, H2, Schema-Typen). Ignoriere den Domain-Namen vollständig für diese Felder.
 2. Wenn du dir bei einem Feld nicht sicher bist: schreibe "Nicht ermittelbar" – erfinde KEINE plausibel klingenden Daten.
 3. "audienceType" (B2B/B2C/Gemischt) muss mit "audienceProfile" logisch konsistent sein.
 4. "trendSignal" und alle numerischen Felder dürfen geschätzt werden, aber nur auf Basis der technischen Daten.
-5. Jedes AI-geschätzte Feld bekommt im Ergebnis das Tag "aiEstimated": true – du musst das nicht selbst einfügen, merke dir nur: sei ehrlich.
+
+ANFORDERUNGEN AN "audienceProfile" – sehr wichtig:
+- Nenne KONKRET welche Produkte/Dienstleistungen angeboten werden (aus dem echten Seiteninhalt)
+- Nenne KONKRET welche Zielgruppe das sind: Berufsbezeichnungen, Branchen, oder Personengruppen (nicht nur "gewerbliche Kunden")
+- Nenne das KONKRETE BEDÜRFNIS oder den Anlass, warum diese Zielgruppe die Website besucht
+- Format: 2 präzise Sätze. Satz 1: Was bietet die Website? Satz 2: Wer sind die typischen Besucher und was suchen sie?
+- SCHLECHT: "Gewerbliche Kunden mit technischen Anforderungen" → zu generisch
+- GUT: "HEROSE GmbH vertreibt Drahtseile, Seilschlösser und Hebetechnik für industrielle Anwendungen. Typische Besucher sind Einkäufer und Ingenieure aus Maschinenbau, Bergbau und Baugewerbe, die zertifizierte Lastaufnahmemittel beschaffen."
+- Wenn der Seiteninhalt zu wenig verrät: schreibe was erkennbar ist + "Details nicht eindeutig ermittelbar"
 
 Gib exakt dieses JSON zurück (kein Markdown, keine Erklärungen):
 {
   "trafficEstimate": { "monthly": <zahl>, "confidence": "low"|"medium"|"high", "range": { "min": <zahl>, "max": <zahl> } },
   "globalRank": <zahl oder null>,
-  "category": "<Branche auf Deutsch – NUR aus echtem Seiteninhalt ableiten>",
+  "category": "<spezifische Branche auf Deutsch – NUR aus echtem Seiteninhalt ableiten, z.B. 'Industrielle Hebetechnik' nicht nur 'Industrie'>",
   "summary": "<2-3 Sätze Fazit auf Deutsch – beinhaltet konkrete Fakten aus den Daten>",
   "trafficSources": { "direct": <0-100>, "organic": <0-100>, "social": <0-100>, "referral": <0-100>, "email": <0-100>, "paid": <0-100> },
   "topCountries": [{ "country": "<Ländername DE>", "code": "<ISO2>", "share": <0-100> }],
   "audienceType": "B2B"|"B2C"|"Gemischt",
-  "audienceProfile": "<1 präziser Satz basierend auf echtem Seiteninhalt – KEIN Raten>",
+  "audienceProfile": "<2 präzise Sätze: Was bietet die Seite konkret? + Wer besucht sie und warum? – KEIN Raten, KEINE Generalisierungen>",
   "trendSignal": "wachsend"|"stabil"|"rückläufig",
   "trendReason": "<1 Satz mit konkretem Datenpunkt>",
   "behavior": {
