@@ -113,7 +113,7 @@ const REPORT_FILE   = path.join(__dir, "improve-report.json");
 const FEATURES_FILE = path.join(__dir, "improve-features.json");
 const MANIFEST_FILE = path.join(__dir, "feature-manifest.json");
 const PENDING_DIR   = path.join(__dir, "improve-pending");
-const AUTO_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const AUTO_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours (once per day)
 
 // Ensure staging dir exists
 try { mkdirSync(PENDING_DIR, { recursive: true }); } catch {}
