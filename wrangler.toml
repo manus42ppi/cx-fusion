@@ -2,6 +2,10 @@ name = "cx-fusion"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist"
 
+[env.production]
+# Build command for Cloudflare Pages (explicit)
+# Set in Cloudflare Dashboard: npm run build
+
 [[kv_namespaces]]
 binding = "CXF_KV"
 id = "b35bb4bccf624e0db3574dc93a6fb93c"

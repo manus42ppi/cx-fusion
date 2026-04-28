@@ -2,14 +2,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { execSync } from "child_process";
 
-// Auto-version: 1.1.<git-commit-count> — bumps automatically on every deploy
+// Auto-version: 1.1.<build-number>
+// build-number = days since 2026-01-01 (reliable on Cloudflare Pages shallow clones)
+// Falls back to git commit count if available for finer granularity.
 function getVersion() {
+  // Try git commit count first (works when full clone is available)
   try {
-    const count = execSync("git rev-list --count HEAD", { encoding: "utf8" }).trim();
-    return `1.1.${count}`;
-  } catch {
-    return "1.1.0";
-  }
+    const count = execSync("git rev-list --count HEAD", { encoding: "utf8", timeout: 3000 }).trim();
+    if (count && /^\d+$/.test(count) && Number(count) > 1) {
+      return `1.1.${count}`;
+    }
+  } catch { /* shallow clone or no git */ }
+
+  // Fallback: days since project epoch — always works, always increases
+  const epoch = new Date("2026-01-01").getTime();
+  const days  = Math.floor((Date.now() - epoch) / 86_400_000);
+  return `1.1.${days}`;
 }
 
 export default defineConfig({
@@ -43,6 +51,7 @@ export default defineConfig({
       "/improve-apply": "http://localhost:8788",
       "/broken-links": "http://localhost:8788",
       "/features-manifest": "http://localhost:8788",
+      "/schema-validate": "http://localhost:8788",
     },
   },
 });
