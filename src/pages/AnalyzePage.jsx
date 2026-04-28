@@ -76,7 +76,14 @@ export default function AnalyzePage() {
         onChange={v => { setInput(v); setError(null); }}
         onAnalyze={() => run()}
         loading={loading}
-        loadingText={step || "Analysieren…"}
+        loadingText="Website analysieren"
+        loadingSteps={[
+          "Verbinde mit Domain…",
+          "Lade Performance-Daten (PSI)…",
+          "Analysiere Technologien & Sicherheit…",
+          "Prüfe Backlinks & Domain-Historie…",
+          "KI generiert Traffic-Insights…",
+        ]}
         error={error}
         examples={EXAMPLES}
         btnLabel="Analysieren"

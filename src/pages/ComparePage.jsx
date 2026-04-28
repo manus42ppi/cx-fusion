@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
+import AnalysisProgress from "../components/ui/AnalysisProgress.jsx";
 import { cleanDomain, analyzeDomain, fmtNum, fmtDate } from "../utils/api.js";
 import { useApp } from "../context/AppContext.jsx";
 
@@ -162,6 +163,12 @@ export default function ComparePage() {
                   {loading[idx] ? "…" : "Los"}
                 </Btn>
               </div>
+              <AnalysisProgress
+                loading={loading[idx]}
+                accent={C.accent}
+                label={`Domain ${idx + 1} analysieren`}
+                steps={["Verbinde mit Domain…","Performance messen…","Tech-Stack erkennen…","KI-Insights generieren…"]}
+              />
               {errors[idx] && (
                 <div style={{ marginTop: 8, fontSize: 12, color: C.danger, display: "flex", gap: 5 }}>
                   <AlertCircle size={13} strokeWidth={IW} />{errors[idx]}

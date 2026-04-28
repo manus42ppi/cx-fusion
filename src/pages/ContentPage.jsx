@@ -635,7 +635,14 @@ Antworte NUR mit diesem JSON-Schema:
         onChange={v => { setDomain(v); setError(""); }}
         onAnalyze={analyze}
         loading={loading}
-        loadingText={`${phase || "Analysieren…"} (${elapsed}s)`}
+        loadingText="Content analysieren"
+        loadingSteps={[
+          "RSS-Feed abrufen…",
+          "Seiteninhalte extrahieren…",
+          "Tonalität & Sentiment prüfen…",
+          "Themen-Cluster berechnen…",
+          "KI analysiert Lesbarkeit & SEO…",
+        ]}
         error={error}
         examples={["spiegel.de", "zeit.de", "heise.de", "t3n.de", "chip.de"]}
         btnLabel="Analysieren"

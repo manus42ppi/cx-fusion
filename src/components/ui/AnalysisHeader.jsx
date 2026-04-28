@@ -2,6 +2,7 @@ import React from "react";
 import { Globe, Search, RefreshCw, ArrowRight } from "lucide-react";
 import { C, T, FONT, IW } from "../../constants/colors.js";
 import { Card, Btn } from "./index.jsx";
+import AnalysisProgress from "./AnalysisProgress.jsx";
 
 /**
  * Shared domain-input header for all single-domain analysis pages.
@@ -33,6 +34,7 @@ export default function AnalysisHeader({
   onAnalyze,
   loading = false,
   loadingText = "Analysieren…",
+  loadingSteps = [],
   error = null,
   examples = [],
   btnLabel = "Analysieren",
@@ -125,6 +127,14 @@ export default function AnalysisHeader({
         )}
 
         {extra}
+
+        {/* Progress bar — shown while loading */}
+        <AnalysisProgress
+          loading={loading}
+          steps={loadingSteps}
+          accent={iconColor}
+          label={loadingText}
+        />
       </Card>
 
       {/* Error */}

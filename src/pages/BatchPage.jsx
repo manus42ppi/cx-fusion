@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
+import AnalysisProgress from "../components/ui/AnalysisProgress.jsx";
 
 const COL_LABELS = {
   domain: "Domain",
@@ -215,12 +216,19 @@ export default function BatchPage() {
       {/* Progress */}
       {running && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 12, color: C.textSoft }}>
-            <span>Analysiere: {domains[progress] || "…"}</span>
-            <span>{progress}/{domains.length}</span>
+          <AnalysisProgress
+            loading={running}
+            accent={C.accent}
+            label={`${progress}/${domains.length} Domains`}
+            steps={domains.slice(Math.max(0, progress - 1), progress + 3).map(d => `Analysiere ${d}…`)}
+          />
+          {/* Deterministic batch progress bar */}
+          <div style={{ marginTop: 10, height: 5, borderRadius: 99, background: C.border }}>
+            <div style={{ height: 5, borderRadius: 99, background: C.success, width: `${domains.length ? (progress / domains.length) * 100 : 0}%`, transition: "width .4s" }} />
           </div>
-          <div style={{ height: 6, borderRadius: 3, background: C.border }}>
-            <div style={{ height: 6, borderRadius: 3, background: C.accent, width: `${domains.length ? (progress / domains.length) * 100 : 0}%`, transition: "width .3s" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5, fontSize: 10, color: C.textMute }}>
+            <span>{domains[progress] || "Abschließen…"}</span>
+            <span>{Math.round(domains.length ? (progress / domains.length) * 100 : 0)}%</span>
           </div>
         </div>
       )}
