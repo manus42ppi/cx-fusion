@@ -37,6 +37,8 @@ export default function DashboardPage() {
     setNewDomain(""); setNewName(""); setShowAdd(false);
   }, [newDomain, newName, addClient]);
 
+  const savedReports = reports;
+
   const recentReports = useMemo(() =>
     Object.entries(savedReports).slice(0, 8)
   , [savedReports]);
@@ -53,8 +55,6 @@ export default function DashboardPage() {
       onBlur={e => e.target.style.borderColor = C.border}
     />
   );
-
-  const savedReports = reports;
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 28px" }}>
