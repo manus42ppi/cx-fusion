@@ -51,7 +51,7 @@ function FeatureCard({ feat, isNew }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{feat.name}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{feat.label || feat.name}</span>
           {isNew && (
             <span style={{ fontSize: 9, fontWeight: 800, color: C.accent, background: C.accentLight, border: `1px solid ${C.accent}30`, padding: "1px 7px", borderRadius: 99, letterSpacing: ".05em" }}>
               NEU
@@ -64,7 +64,7 @@ function FeatureCard({ feat, isNew }) {
             </span>
           )}
         </div>
-        <div style={{ fontSize: 11, color: C.textSoft, lineHeight: 1.5 }}>{feat.desc}</div>
+        <div style={{ fontSize: 11, color: C.textSoft, lineHeight: 1.5 }}>{feat.desc || feat.category || ""}</div>
         {feat.page && (
           <div style={{ fontSize: 10, color: C.textMute, marginTop: 4, fontFamily: "monospace" }}>
             {feat.page}

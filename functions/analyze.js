@@ -15,14 +15,24 @@ export async function onRequestPost(ctx) {
   const base   = new URL(ctx.request.url);
   const origin = base.origin;
 
-  // Fire all requests in parallel
-  const [psi, pr, whois, crawl, tech, topPages] = await Promise.allSettled([
-    fetch(`${origin}/pagespeed`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()),
-    fetch(`${origin}/pagerank`,  { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()),
-    fetch(`${origin}/whois`,     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()),
-    fetch(`${origin}/crawl`,     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()),
-    fetch(`${origin}/tech`,      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()),
-    fetch(`${origin}/pagerank`,  { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) }).then(r => r.json()).catch(() => null),
+  const post = (path, ms = 10000) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    return fetch(`${origin}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+      signal: ctrl.signal,
+    }).then(r => r.json()).finally(() => clearTimeout(timer));
+  };
+
+  // Fire all requests in parallel with individual timeouts
+  const [psi, pr, whois, crawl, tech] = await Promise.allSettled([
+    post("/pagespeed", 12000),
+    post("/pagerank",   8000),
+    post("/whois",      8000),
+    post("/crawl",     12000),
+    post("/tech",      12000),
   ]);
 
   const val = (p) => p.status === "fulfilled" ? p.value : null;
@@ -35,7 +45,7 @@ export async function onRequestPost(ctx) {
     whois:        val(whois),
     crawl:        val(crawl),
     tech:         val(tech),
-    topPages:     [],
+    topPages:     val(crawl)?.topPages || [],
     archiveTrend: [],
   };
 

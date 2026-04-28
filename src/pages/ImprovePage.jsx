@@ -259,7 +259,7 @@ export default function ImprovePage() {
 
   const statItems = [
     { icon: BarChart2, label: "Geloggte Fehler",   value: serverStatus?.logCount ?? "–", sub: "seit Server-Start",      color: C.accent },
-    { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "–", sub: "alle 15 Min automatisch", color: "#d97706" },
+    { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "–", sub: "1× täglich automatisch", color: "#d97706" },
     { icon: History,   label: "Letzter Fehler-Lauf", value: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleDateString("de-DE") : "noch keiner", color: C.success },
     { icon: Target,    label: "Letzter Feature-Lauf", value: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleDateString("de-DE") : "noch keiner", color: "#7c3aed" },
   ];
@@ -274,7 +274,7 @@ export default function ImprovePage() {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 24, fontWeight: 800, color: C.text, margin: 0 }}>Autonome Verbesserung</h1>
-          <p style={{ fontSize: 13, color: C.textSoft, margin: 0 }}>Fehler-Diagnose + Markt-Analyse + Feature-Entwicklung — alle 15 Min automatisch</p>
+          <p style={{ fontSize: 13, color: C.textSoft, margin: 0 }}>Fehler-Diagnose + Markt-Analyse + Feature-Entwicklung — 1× täglich automatisch</p>
         </div>
         {/* Test-Status-Badge */}
         {serverStatus?.tests?.ts && (
@@ -504,7 +504,7 @@ export default function ImprovePage() {
             <Card style={{ padding: 48, textAlign: "center" }}>
               <Package size={40} color={C.textSoft} strokeWidth={IW} style={{ margin: "0 auto 12px" }} />
               <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid, marginBottom: 6 }}>Noch keine Feature-Analyse</div>
-              <div style={{ fontSize: 12, color: C.textSoft }}>Klicke "Jetzt analysieren" um den Markt-Scan zu starten. Läuft automatisch alle 15 Min.</div>
+              <div style={{ fontSize: 12, color: C.textSoft }}>Klicke "Jetzt analysieren" um den Markt-Scan zu starten. Läuft automatisch 1× täglich.</div>
             </Card>
           )}
         </>
@@ -581,7 +581,7 @@ export default function ImprovePage() {
             <Card style={{ padding: 48, textAlign: "center" }}>
               <AlertTriangle size={40} color={C.textSoft} strokeWidth={IW} style={{ margin: "0 auto 12px" }} />
               <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid }}>Noch keine Diagnose gelaufen</div>
-              <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Starte die Diagnose manuell oder warte auf den nächsten Auto-Lauf (alle 15 Min).</div>
+              <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Starte die Diagnose manuell oder warte auf den nächsten Auto-Lauf (1× täglich).</div>
             </Card>
           )}
         </>
