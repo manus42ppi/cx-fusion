@@ -71,13 +71,16 @@ export async function onRequestPost(_ctx) {
   const { domain } = await _ctx.request.json();
 
   try {
+    const t0 = Date.now();
     const res = await fetch(`https://${domain}`, {
       headers: { "User-Agent": "CXFusion-Bot/1.0 (web analytics; contact@cxfusion.io)" },
       redirect: "follow",
     });
+    const ttfb = Date.now() - t0;
 
     const headers = Object.fromEntries(res.headers.entries());
     const html = await res.text();
+    const totalTime = Date.now() - t0;
     const combined = html;
 
     const detected = {};
@@ -90,16 +93,62 @@ export async function onRequestPost(_ctx) {
       detected[cat] = [...new Set(detected[cat])];
     }
 
-    // SSL info from headers
+    // Security headers
+    const secHeaders = {
+      hsts:           !!headers["strict-transport-security"],
+      csp:            !!headers["content-security-policy"],
+      xFrame:         !!headers["x-frame-options"],
+      xContentType:   !!headers["x-content-type-options"],
+      referrerPolicy: !!headers["referrer-policy"],
+      permissions:    !!headers["permissions-policy"],
+    };
+    const secScore = Object.values(secHeaders).filter(Boolean).length; // 0-6
+
+    // Performance score from TTFB + headers
+    const perfScore = (() => {
+      let s = 0;
+      if (ttfb < 200)       s += 30;
+      else if (ttfb < 600)  s += 20;
+      else if (ttfb < 1500) s += 10;
+      if (headers["content-encoding"]?.includes("gzip") || headers["content-encoding"]?.includes("br")) s += 20;
+      if (secHeaders.hsts)  s += 15;
+      if (secHeaders.csp)   s += 10;
+      if (!headers["x-powered-by"]) s += 10;
+      if (res.status === 200) s += 15;
+      return Math.min(s, 100);
+    })();
+
+    const scripts = (html.match(/<script/gi) || []).length;
+    const images  = (html.match(/<img/gi) || []).length;
+    const styles  = (html.match(/<link[^>]+stylesheet/gi) || []).length;
+
     const ssl = {
-      hsts:      !!headers["strict-transport-security"],
-      protocol:  headers[":status"] ? "HTTP/2" : "HTTP/1.1",
-      server:    headers["server"] || null,
-      powered:   headers["x-powered-by"] || null,
+      hsts:          secHeaders.hsts,
+      csp:           secHeaders.csp,
+      xFrame:        secHeaders.xFrame,
+      xContentType:  secHeaders.xContentType,
+      referrerPolicy:secHeaders.referrerPolicy,
+      protocol:      "HTTPS",
+      server:        headers["server"] || null,
+      powered:       headers["x-powered-by"] || null,
     };
 
-    return new Response(JSON.stringify({ detected, ssl, status: res.status }), { headers: CORS });
+    const perf = {
+      ttfb,
+      totalTime,
+      compression:  headers["content-encoding"] || null,
+      server:       headers["server"] || null,
+      powered:      headers["x-powered-by"] || null,
+      perfScore,
+      secScore,
+      scripts,
+      images,
+      styles,
+      htmlSizeKb:   Math.round(html.length / 1024),
+    };
+
+    return new Response(JSON.stringify({ detected, ssl, perf, status: res.status }), { headers: CORS });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e), detected: {}, ssl: {} }), { headers: CORS });
+    return new Response(JSON.stringify({ error: String(e), detected: {}, ssl: {}, perf: {} }), { headers: CORS });
   }
 }
