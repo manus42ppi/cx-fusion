@@ -128,6 +128,7 @@ export function saveReport(domain, data) {
   localStorage.setItem(REPORTS_KEY, JSON.stringify(all));
   kvSet(REPORTS_KEY, all);
   _addToHistory(domain, "website", savedAt, data);
+  _pushToFullHistory(domain, "website", savedAt, data);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,26 +158,50 @@ export function saveContentReport(domain, data) {
   localStorage.setItem(CONTENT_REPORTS_KEY, JSON.stringify(all));
   kvSet(CONTENT_REPORTS_KEY, all);
   _addToHistory(domain, "content", savedAt, data);
+  _pushToFullHistory(domain, "content", savedAt, data);
 }
 
 // ---------------------------------------------------------------------------
-// History
+// Full report history – up to 5 complete reports per domain
 // ---------------------------------------------------------------------------
 
-const HISTORY_KEY = "cxf_history";
-const HISTORY_MAX = 20;
+const HISTORY_KEY    = "cxf_history";    // legacy summary (kept for compat)
+const FULLHIST_MAX   = 5;
 
-function _addToHistory(domain, type, savedAt, data) {
-  const all = loadClientHistorySync();
-  const existing = all[domain] || [];
-  const summary = type === "website"
-    ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.psi?.score, trendSignal: data?.ai?.trendSignal }
+function _fullHistKey(domain) { return `cxf_fullhist_${domain.replace(/\./g, "_")}`; }
+
+/** Load full-report history for one domain (sync, from localStorage). */
+export function loadFullHistorySync(domain) {
+  try { return JSON.parse(localStorage.getItem(_fullHistKey(domain)) || "[]"); }
+  catch { return []; }
+}
+
+/** Load full-report history for one domain (async, KV-first). */
+export async function loadFullHistory(domain) {
+  const kv = await kvGet(_fullHistKey(domain));
+  if (kv !== null) {
+    try { localStorage.setItem(_fullHistKey(domain), JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadFullHistorySync(domain);
+}
+
+/** Save one full report into the domain's history (keeps last 5). */
+function _pushToFullHistory(domain, type, savedAt, data) {
+  const key      = _fullHistKey(domain);
+  const existing = loadFullHistorySync(domain);
+  const summary  = type === "website"
+    ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal, category: data?.ai?.category }
     : { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
-  all[domain] = [{ id: uid(), type, savedAt, summary }, ...existing].slice(0, HISTORY_MAX);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
-  kvSet(HISTORY_KEY, all);
+
+  const entry = { id: uid(), type, savedAt, summary, data };
+  const next  = [entry, ...existing].slice(0, FULLHIST_MAX);
+
+  localStorage.setItem(key, JSON.stringify(next));
+  kvSet(key, next);
 }
 
+// Legacy compact history (for HistoryPanel count badge)
 export function loadClientHistorySync() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "{}"); }
   catch { return {}; }
@@ -189,4 +214,15 @@ export async function loadClientHistory() {
     return kv;
   }
   return loadClientHistorySync();
+}
+
+function _addToHistory(domain, type, savedAt, data) {
+  const all      = loadClientHistorySync();
+  const existing = all[domain] || [];
+  const summary  = type === "website"
+    ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal }
+    : { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
+  all[domain] = [{ id: uid(), type, savedAt, summary }, ...existing].slice(0, FULLHIST_MAX);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+  kvSet(HISTORY_KEY, all);
 }

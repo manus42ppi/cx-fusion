@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users, Plus, Globe, Trash2, Search, Calendar,
   TrendingUp, TrendingDown, Minus, ChevronRight, X,
   BookText, Clock, History, ChevronDown, ChevronUp,
-  BarChart2, FileText,
+  ExternalLink, BarChart2,
 } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
-import { cleanDomain, fmtNum, fmtDate } from "../utils/api.js";
+import { cleanDomain, fmtNum, fmtDate, loadFullHistory, loadFullHistorySync } from "../utils/api.js";
 import { useApp } from "../context/AppContext.jsx";
 
 function fmtK(n) {
@@ -98,50 +98,104 @@ function ReportBox({ type, report, onOpen, onAnalyze }) {
   );
 }
 
-function HistoryPanel({ history }) {
-  if (!history?.length) return (
-    <div style={{ padding: "10px 0", fontSize: 11, color: C.textMute, textAlign: "center" }}>
-      Noch keine Report-Historie
+function HistoryPanel({ domain, onOpenReport, onOpenContent }) {
+  const [entries, setEntries] = useState(() => loadFullHistorySync(domain));
+
+  useEffect(() => {
+    loadFullHistory(domain).then(setEntries);
+  }, [domain]);
+
+  if (!entries?.length) return (
+    <div style={{ padding: "12px 0", fontSize: 11, color: C.textMute, textAlign: "center" }}>
+      Noch keine Report-Historie — starte eine Analyse, um sie hier zu speichern.
     </div>
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {history.map(entry => {
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>
+        Letzte {entries.length} Report{entries.length !== 1 ? "s" : ""} (max. 5)
+      </div>
+      {entries.map((entry, idx) => {
         const isWebsite = entry.type === "website";
-        const accent = isWebsite ? C.accent : "#7c3aed";
-        const Icon = isWebsite ? Globe : BookText;
-        const label = isWebsite ? "Website" : "Content";
-        const metricParts = [];
-        if (isWebsite) {
-          if (entry.summary?.traffic) metricParts.push(`${fmtK(entry.summary.traffic)} Traffic`);
-          if (entry.summary?.score)   metricParts.push(`Score ${entry.summary.score}`);
-        } else {
-          if (entry.summary?.articles) metricParts.push(`${entry.summary.articles} Art.`);
-          if (entry.summary?.tone)     metricParts.push(entry.summary.tone);
-        }
+        const accent    = isWebsite ? C.accent : "#7c3aed";
+        const accentBg  = isWebsite ? C.accentLight : "#ede9fe";
+        const Icon      = isWebsite ? Globe : BookText;
+        const label     = isWebsite ? "Website-Analyse" : "Content-Audit";
+
+        const traffic  = entry.summary?.traffic;
+        const score    = entry.summary?.score;
+        const articles = entry.summary?.articles;
+        const tone     = entry.summary?.tone;
+        const trend    = entry.summary?.trendSignal;
+        const category = entry.summary?.category;
+
+        const TREND_COLOR = { wachsend: C.success, stabil: C.warning, rückläufig: "#ef4444" };
 
         return (
           <div key={entry.id} style={{
             display: "flex", alignItems: "center", gap: 10,
-            padding: "7px 10px", borderRadius: T.rSm,
-            background: C.bg, border: `1px solid ${C.border}`,
+            padding: "10px 12px", borderRadius: T.rMd,
+            background: idx === 0 ? accentBg + "50" : C.bg,
+            border: `1px solid ${idx === 0 ? accent + "30" : C.border}`,
           }}>
+            {/* Type icon */}
             <div style={{
-              width: 22, height: 22, borderRadius: T.rSm, flexShrink: 0,
-              background: accent + "15", display: "flex", alignItems: "center", justifyContent: "center",
+              width: 30, height: 30, borderRadius: T.rSm, flexShrink: 0,
+              background: accent + "15", border: `1px solid ${accent}25`,
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Icon size={11} color={accent} strokeWidth={IW} />
+              <Icon size={13} color={accent} strokeWidth={IW} />
             </div>
+
+            {/* Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: accent }}>{label}-Report</span>
-              {metricParts.length > 0 && (
-                <span style={{ fontSize: 10, color: C.textMute, marginLeft: 6 }}>{metricParts.join(" · ")}</span>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{label}</span>
+                {idx === 0 && <span style={{ fontSize: 9, fontWeight: 800, color: accent, background: accent + "18", padding: "1px 6px", borderRadius: 99 }}>AKTUELL</span>}
+                {category && <span style={{ fontSize: 10, color: C.textMute }}>{category}</span>}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 3, flexWrap: "wrap", alignItems: "center" }}>
+                {traffic != null && (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: C.textMid }}>
+                    <BarChart2 size={9} strokeWidth={IW} style={{ marginRight: 2 }} />
+                    {fmtK(traffic)} Traffic/Mo
+                  </span>
+                )}
+                {score != null && (
+                  <span style={{ fontSize: 11, color: C.textMid }}>Score {score}</span>
+                )}
+                {articles != null && (
+                  <span style={{ fontSize: 11, color: C.textMid }}>{articles} Artikel</span>
+                )}
+                {tone && <span style={{ fontSize: 11, color: C.textMute }}>{tone}</span>}
+                {trend && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: TREND_COLOR[trend] || C.textMute }}>
+                    {trend === "wachsend" ? "↑" : trend === "rückläufig" ? "↓" : "→"} {trend}
+                  </span>
+                )}
+              </div>
             </div>
-            <div style={{ fontSize: 10, color: C.textMute, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 3 }}>
-              <Calendar size={9} strokeWidth={IW} />
-              {fmtDate(entry.savedAt)}
+
+            {/* Date */}
+            <div style={{ fontSize: 10, color: C.textMute, whiteSpace: "nowrap", textAlign: "right", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 4 }}>
+                <Clock size={9} strokeWidth={IW} />
+                {fmtDate(entry.savedAt)}
+              </div>
+              {/* Open button */}
+              <button
+                onClick={() => isWebsite ? onOpenReport(entry.data) : onOpenContent(entry.data)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  padding: "4px 10px", borderRadius: T.rSm,
+                  background: accent, color: "#fff",
+                  border: "none", cursor: "pointer", fontFamily: FONT,
+                  fontSize: 10, fontWeight: 700, whiteSpace: "nowrap",
+                }}
+              >
+                <ExternalLink size={9} strokeWidth={IW} /> Öffnen
+              </button>
             </div>
           </div>
         );
@@ -170,19 +224,19 @@ export default function ClientsPage() {
     setShowForm(false);
   }
 
-  function openWebsiteReport(client) {
-    const cached = reports[client.domain];
-    if (cached) {
-      setActiveReport({ domain: client.domain, ...cached });
+  function openWebsiteReport(client, historicData) {
+    const data = historicData || reports[client.domain];
+    if (data) {
+      setActiveReport({ domain: client.domain, ...data });
       goNav("report");
     } else {
       goNav("analyze", { domain: client.domain });
     }
   }
 
-  function openContentReport(client) {
-    const cached = contentReports[client.domain];
-    goNav("content", { domain: client.domain, report: cached || null });
+  function openContentReport(client, historicData) {
+    const data = historicData || contentReports?.[client.domain];
+    goNav("content", { domain: client.domain, report: data || null });
   }
 
   function handleDelete(id) {
@@ -363,8 +417,8 @@ export default function ClientsPage() {
                   />
                 </div>
 
-                {/* History toggle */}
-                {history.length > 0 && (
+                {/* History toggle — show if any report exists */}
+                {hasAnyReport && (
                   <>
                     <button
                       onClick={() => toggleHistory(client.id)}
@@ -375,17 +429,24 @@ export default function ClientsPage() {
                         cursor: "pointer", fontFamily: FONT,
                         display: "flex", alignItems: "center", gap: 6,
                         fontSize: 11, color: C.textSoft, fontWeight: 600,
+                        transition: "background .15s",
                       }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.surfaceHigh}
+                      onMouseLeave={e => e.currentTarget.style.background = C.bg}
                     >
-                      <History size={12} strokeWidth={IW} />
-                      {history.length} Report{history.length !== 1 ? "s" : ""} in der Historie
+                      <History size={12} strokeWidth={IW} color={C.accent} />
+                      Report-Historie (max. 5)
                       {isHistOpen
                         ? <ChevronUp size={12} strokeWidth={IW} style={{ marginLeft: "auto" }} />
                         : <ChevronDown size={12} strokeWidth={IW} style={{ marginLeft: "auto" }} />}
                     </button>
                     {isHistOpen && (
-                      <div style={{ padding: "12px 20px 16px", background: C.bg, borderTop: `1px solid ${C.border}` }}>
-                        <HistoryPanel history={history} />
+                      <div style={{ padding: "14px 20px 18px", background: C.bg, borderTop: `1px solid ${C.border}` }}>
+                        <HistoryPanel
+                          domain={client.domain}
+                          onOpenReport={data => openWebsiteReport(client, data)}
+                          onOpenContent={data => openContentReport(client, data)}
+                        />
                       </div>
                     )}
                   </>
