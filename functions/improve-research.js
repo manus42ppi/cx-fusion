@@ -50,7 +50,10 @@ Identifiziere 6-8 echte Marktlücken die noch NICHT in der implementierten Featu
 
     // Store in KV if available
     if (ctx.env.CXF_KV) {
-      await ctx.env.CXF_KV.put("lastFeatures", JSON.stringify(parsed));
+      await Promise.all([
+        ctx.env.CXF_KV.put("lastFeatures", JSON.stringify(parsed)),
+        ctx.env.CXF_KV.put("lastAutoRun", String(Date.now())),
+      ]);
     }
 
     return new Response(JSON.stringify({ running: false, ...parsed }), { headers: CORS });

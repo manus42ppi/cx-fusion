@@ -259,7 +259,7 @@ export default function ImprovePage() {
 
   const statItems = [
     { icon: BarChart2, label: "Geloggte Fehler",   value: serverStatus?.logCount ?? "–", sub: "seit Server-Start",      color: C.accent },
-    { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "–", sub: "1× täglich automatisch", color: "#d97706" },
+    { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "Manuell", sub: serverStatus?.nextAutoRun ? "1× täglich automatisch" : "Lokal: 1× täglich · Jetzt: manuell", color: "#d97706" },
     { icon: History,   label: "Letzter Fehler-Lauf", value: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleDateString("de-DE") : "noch keiner", color: C.success },
     { icon: Target,    label: "Letzter Feature-Lauf", value: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleDateString("de-DE") : "noch keiner", color: "#7c3aed" },
   ];
