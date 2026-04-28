@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import {
   loadClientsSync, loadClients, saveClients,
   loadReportsSync, loadReports,
@@ -11,43 +12,61 @@ import {
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-const SESSION_KEY = "cxf_user";
-
-function loadSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }
-  catch { return null; }
+// Map Clerk user → internal user format
+function mapClerkUser(clerkUser) {
+  const fullName = clerkUser.fullName || "";
+  const email = clerkUser.primaryEmailAddress?.emailAddress || "";
+  const initials = fullName
+    ? fullName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : email.slice(0, 2).toUpperCase();
+  return {
+    id: clerkUser.id,
+    name: fullName || email.split("@")[0] || "User",
+    email,
+    role: clerkUser.publicMetadata?.role || "analyst",
+    initials,
+    imageUrl: clerkUser.imageUrl || null,
+    color: "#0057D9",
+  };
 }
 
 export function AppProvider({ children }) {
-  const [user, setUser]           = useState(() => loadSession());
-  const [nav, setNav]             = useState("dashboard");
+  // ── Clerk auth ────────────────────────────────────────────────────────────
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
-  // Fast initial state from localStorage, then KV hydration via useEffect
-  const [clients, setClients]             = useState(() => loadClientsSync());
-  const [reports, setReports]             = useState(() => loadReportsSync());
+  // Demo login bypass (no Clerk account needed)
+  const [demoUser, setDemoUser] = useState(null);
+
+  // Resolved user: Clerk user > demo user > null
+  const user = isSignedIn && clerkUser ? mapClerkUser(clerkUser) : demoUser;
+
+  const handleLogout = useCallback(async () => {
+    if (isSignedIn) {
+      await signOut();
+    }
+    setDemoUser(null);
+  }, [isSignedIn, signOut]);
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  const [nav, setNav] = useState("dashboard");
+
+  // ── Data state (fast localStorage init, then KV hydration) ───────────────
+  const [clients, setClients]               = useState(() => loadClientsSync());
+  const [reports, setReports]               = useState(() => loadReportsSync());
   const [contentReports, setContentReports] = useState(() => loadContentReportsSync());
   const [clientHistory, setClientHistory]   = useState(() => loadClientHistorySync());
 
-  const [activeReport, setActiveReport] = useState(null);
-  const [compareDomains, setCompareDomains] = useState([]);
-  const [pendingDomain, setPendingDomain]   = useState(null);
+  const [activeReport,    setActiveReport]    = useState(null);
+  const [compareDomains,  setCompareDomains]  = useState([]);
+  const [pendingDomain,   setPendingDomain]   = useState(null);
 
-  // Hydrate from KV on mount (source of truth across devices)
+  // Hydrate from KV on mount
   useEffect(() => {
     loadClients().then(data => setClients(data));
     loadReports().then(data => setReports(data));
     loadContentReports().then(data => setContentReports(data));
     loadClientHistory().then(data => setClientHistory(data));
-  }, []);
-
-  const login = useCallback((u) => {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(u));
-    setUser(u);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(SESSION_KEY);
-    setUser(null);
   }, []);
 
   const goNav = useCallback((page, data) => {
@@ -90,9 +109,17 @@ export function AppProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      user, login, logout,
+      // Auth
+      isLoaded,
+      user,
+      demoUser,
+      setDemoUser,
+      handleLogout,
+      // Navigation
       nav, goNav,
+      // Clients
       clients, addClient, removeClient,
+      // Reports
       activeReport, setActiveReport,
       compareDomains, setCompareDomains,
       pendingDomain, setPendingDomain,

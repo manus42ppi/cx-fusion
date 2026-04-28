@@ -1,209 +1,192 @@
 import React, { useState } from "react";
-import { Globe, Shield, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
+import { SignIn } from "@clerk/clerk-react";
+import { Globe, Shield, BarChart2, Search, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW, CSS } from "../constants/colors.js";
 import { DEMO_USERS } from "../constants/demo.js";
 
+// ── Clerk appearance ──────────────────────────────────────────────────────────
+const clerkAppearance = {
+  variables: {
+    colorPrimary:         T.brand600,
+    colorBackground:      T.white,
+    colorText:            T.gray900,
+    colorTextSecondary:   T.gray500,
+    colorInputBackground: T.white,
+    colorInputText:       T.gray900,
+    colorDanger:          T.error600,
+    borderRadius:         "8px",
+    spacingUnit:          "14px",
+    fontFamily:           FONT,
+  },
+  elements: {
+    rootBox:              { width: "100%" },
+    card: {
+      background:   T.white,
+      border:       `1px solid ${T.gray200}`,
+      boxShadow:    T.shadowLg,
+      borderRadius: "12px",
+      width:        "100%",
+    },
+    headerTitle:          { color: T.gray900, fontSize: "20px", fontWeight: "700" },
+    headerSubtitle:       { color: T.gray500 },
+    socialButtonsBlockButton: {
+      background: T.white,
+      border:     `1px solid ${T.gray300}`,
+      color:      T.gray700,
+      boxShadow:  T.shadowXs,
+    },
+    socialButtonsBlockButtonText: { color: T.gray700, fontWeight: "600" },
+    dividerText:          { color: T.gray400, fontSize: "12px", fontWeight: "600" },
+    dividerLine:          { background: T.gray200 },
+    formFieldLabel:       { color: T.gray600, fontSize: "12px", fontWeight: "600", letterSpacing: ".04em" },
+    formFieldInput: {
+      background: T.white,
+      border:     `1px solid ${T.gray300}`,
+      color:      T.gray900,
+      fontSize:   "14px",
+    },
+    formButtonPrimary: {
+      background: T.brand600,
+      boxShadow:  `0 2px 8px rgba(7,93,242,0.20)`,
+      fontWeight: "600",
+      fontSize:   "14px",
+    },
+    footerActionLink:     { color: T.brand600 },
+    footerActionText:     { color: T.gray500 },
+    alertText:            { color: T.error600 },
+    logoBox:              { display: "none" },
+    logoImage:            { display: "none" },
+  },
+};
+
 export default function Login({ onLogin }) {
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw]     = useState(false);
-  const [error, setError]       = useState("");
   const [showDemo, setShowDemo] = useState(false);
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const user = DEMO_USERS.find(u => u.email === email.trim().toLowerCase() && u.password === password);
-    if (user) { onLogin(user); }
-    else { setError("E-Mail oder Passwort ungültig."); }
-  }
-
-  function loginAs(user) {
-    onLogin(user);
-  }
-
   return (
-    <div style={{
-      minHeight: "100vh", background: C.bg,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: FONT, padding: 24,
-    }}>
+    <div style={{ minHeight: "100vh", background: T.appBg, display: "flex", fontFamily: FONT }}>
       <style>{CSS}</style>
 
-      <div style={{ width: "100%", maxWidth: 420 }}>
+      {/* ── Left: Branding ───────────────────────────────────────────────────── */}
+      <div style={{
+        flex: "0 0 400px", background: T.brand600,
+        display: "flex", flexDirection: "column",
+        justifyContent: "space-between", padding: "48px 40px",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: "absolute", top: -60, right: -60, width: 240, height: 240, borderRadius: "50%", background: "rgba(255,255,255,.06)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,.04)", pointerEvents: "none" }} />
+
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <img src="/ppitalk-logo-color.png" alt="ppi talk" style={{ height: 40, marginBottom: 12 }} />
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            background: C.accentLight, borderRadius: 99, padding: "4px 14px",
-            border: `1px solid ${C.accent}30`,
-          }}>
-            <Globe size={12} color={C.accent} strokeWidth={IW} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: C.accent, letterSpacing: ".04em" }}>CX FUSION · WEB INTELLIGENCE</span>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 40 }}>
+            <div style={{ width: 40, height: 40, borderRadius: T.rMd, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Globe size={20} color="#fff" strokeWidth={IW} />
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: FONT_DISPLAY, letterSpacing: "-.01em" }}>CX Fusion</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", fontWeight: 600, letterSpacing: ".06em" }}>WEB INTELLIGENCE</div>
+            </div>
           </div>
+
+          <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 14px", lineHeight: 1.2, letterSpacing: "-.02em" }}>
+            Deine Web-<br />Intelligence-<br />Plattform
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,.65)", lineHeight: 1.6, margin: 0 }}>
+            Analysiere Websites, prüfe SEO und gewinne KI-gestützte Insights – alles an einem Ort.
+          </p>
         </div>
 
-        {/* Card */}
-        <div style={{
-          background: C.surface, borderRadius: T.rLg,
-          border: `1px solid ${C.border}`,
-          boxShadow: "0 8px 32px rgba(0,0,0,.08)",
-          overflow: "hidden",
-        }}>
-          <div style={{ padding: "28px 32px 24px" }}>
-            <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 6px" }}>
+        {/* Feature highlights */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {[
+            { I: Search,   label: "Website-Analyse & Tech-Stack" },
+            { I: BarChart2, label: "Traffic & Performance-Daten" },
+            { I: FileText, label: "Content-Audit & SEO-Analyse" },
+          ].map(({ I, label }) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: T.rSm, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <I size={16} color="#fff" strokeWidth={IW} />
+              </div>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,.8)", fontWeight: 500 }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>
+          © 2026 ppi talk GmbH · Web Intelligence Platform
+        </div>
+      </div>
+
+      {/* ── Right: Login ─────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", overflowY: "auto" }}>
+        <div style={{ width: "100%", maxWidth: 440, animation: "fadeUp .35s ease" }}>
+          <div style={{ marginBottom: 28, textAlign: "center" }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: T.gray900, margin: "0 0 6px", letterSpacing: "-.01em" }}>
               Willkommen zurück
-            </h1>
-            <p style={{ fontSize: 13, color: C.textSoft, margin: "0 0 24px" }}>
-              Melde dich an, um fortzufahren.
+            </h2>
+            <p style={{ fontSize: 14, color: T.gray500, margin: 0 }}>
+              Melde dich an oder erstelle einen Account
             </p>
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: C.textSoft, letterSpacing: ".04em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-                  E-Mail
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => { setEmail(e.target.value); setError(""); }}
-                  placeholder="deine@email.com"
-                  autoFocus
-                  style={{
-                    width: "100%", padding: "10px 12px", borderRadius: T.rMd,
-                    border: `1px solid ${C.border}`, background: C.bg,
-                    fontFamily: FONT, fontSize: 14, color: C.text,
-                    outline: "none", boxSizing: "border-box", transition: "border-color .15s",
-                  }}
-                  onFocus={e => e.target.style.borderColor = C.accent}
-                  onBlur={e => e.target.style.borderColor = C.border}
-                />
-              </div>
-
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: C.textSoft, letterSpacing: ".04em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-                  Passwort
-                </label>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showPw ? "text" : "password"}
-                    value={password}
-                    onChange={e => { setPassword(e.target.value); setError(""); }}
-                    placeholder="••••••••"
-                    style={{
-                      width: "100%", padding: "10px 38px 10px 12px", borderRadius: T.rMd,
-                      border: `1px solid ${C.border}`, background: C.bg,
-                      fontFamily: FONT, fontSize: 14, color: C.text,
-                      outline: "none", boxSizing: "border-box", transition: "border-color .15s",
-                    }}
-                    onFocus={e => e.target.style.borderColor = C.accent}
-                    onBlur={e => e.target.style.borderColor = C.border}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(v => !v)}
-                    style={{
-                      position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-                      background: "none", border: "none", cursor: "pointer", padding: 4,
-                    }}
-                  >
-                    {showPw
-                      ? <EyeOff size={15} color={C.textSoft} strokeWidth={IW} />
-                      : <Eye size={15} color={C.textSoft} strokeWidth={IW} />}
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <div style={{
-                  marginBottom: 14, padding: "9px 12px", borderRadius: T.rMd,
-                  background: "#fef2f2", border: "1px solid #fecaca",
-                  fontSize: 13, color: "#dc2626",
-                }}>
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                style={{
-                  width: "100%", padding: "11px 0", borderRadius: T.rMd,
-                  background: C.accent, color: "#fff",
-                  border: "none", cursor: "pointer", fontFamily: FONT,
-                  fontSize: 14, fontWeight: 700, transition: "opacity .15s",
-                }}
-                onMouseEnter={e => e.target.style.opacity = ".88"}
-                onMouseLeave={e => e.target.style.opacity = "1"}
-              >
-                Anmelden
-              </button>
-            </form>
           </div>
 
-          {/* Demo accounts */}
-          <div style={{ borderTop: `1px solid ${C.border}`, background: C.bg }}>
+          {/* Clerk SignIn (handles login + sign-up) */}
+          <SignIn routing="virtual" appearance={clerkAppearance} />
+
+          {/* Demo Credentials */}
+          <div style={{ marginTop: 16, background: T.white, borderRadius: T.rLg, border: `1px solid ${T.gray200}`, boxShadow: T.shadowXs, overflow: "hidden" }}>
             <button
-              onClick={() => setShowDemo(v => !v)}
+              onClick={() => setShowDemo(s => !s)}
               style={{
-                width: "100%", padding: "12px 32px",
-                background: "none", border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 8,
-                fontFamily: FONT, fontSize: 12, color: C.textSoft,
+                width: "100%", background: "none", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 6, padding: "12px 16px", color: T.gray600,
+                fontSize: 13, fontWeight: 600, fontFamily: FONT, transition: "background .1s",
               }}
+              onMouseEnter={e => e.currentTarget.style.background = T.gray50}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
-              <Shield size={13} strokeWidth={IW} color={C.accent} />
-              <span style={{ fontWeight: 600 }}>DEMO-ZUGÄNGE</span>
-              <span style={{ marginLeft: "auto", color: C.textMute }}>
-                {showDemo ? <ChevronUp size={13} strokeWidth={IW} /> : <ChevronDown size={13} strokeWidth={IW} />}
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Shield size={14} strokeWidth={IW} color={T.brand600} />
+                Demo-Zugänge (ohne Account)
               </span>
+              {showDemo ? <ChevronUp size={14} color={T.gray400} /> : <ChevronDown size={14} color={T.gray400} />}
             </button>
+
             {showDemo && (
-              <div style={{ padding: "0 32px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ padding: "0 12px 12px", borderTop: `1px solid ${T.gray100}` }}>
+                <div style={{ fontSize: 12, color: T.gray400, padding: "10px 4px 8px" }}>
+                  Klicken zum Sofort-Login — kein Account nötig
+                </div>
                 {DEMO_USERS.map(u => (
-                  <button
+                  <div
                     key={u.id}
-                    onClick={() => loginAs(u)}
+                    onClick={() => onLogin(u)}
                     style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "10px 14px", borderRadius: T.rMd,
-                      background: C.surface, border: `1px solid ${C.border}`,
-                      cursor: "pointer", fontFamily: FONT, textAlign: "left",
-                      transition: "all .15s",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "9px 12px", borderRadius: T.rMd, cursor: "pointer", marginBottom: 4,
+                      background: T.gray50, border: `1px solid ${T.gray200}`, transition: "all .12s",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = C.accentLight; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = T.brand25; e.currentTarget.style.borderColor = T.brand300; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = T.gray50; e.currentTarget.style.borderColor = T.gray200; }}
                   >
-                    <div style={{
-                      width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-                      background: u.color + "20", border: `1px solid ${u.color}40`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 11, fontWeight: 800, color: u.color,
-                    }}>
-                      {u.initials}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 30, height: 30, borderRadius: "50%", background: u.color + "20", border: `1px solid ${u.color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: u.color, flexShrink: 0 }}>
+                        {u.initials}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: T.gray800 }}>{u.name}</div>
+                        <div style={{ fontSize: 11, color: T.gray500 }}>{u.email}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{u.name}</div>
-                      <div style={{ fontSize: 11, color: C.textMute }}>{u.email}</div>
-                    </div>
-                    <div style={{
-                      marginLeft: "auto", fontSize: 10, fontWeight: 700,
-                      padding: "2px 8px", borderRadius: 99,
-                      background: u.color + "15", color: u.color,
-                    }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: u.color + "15", color: u.color }}>
                       {u.role.toUpperCase()}
                     </div>
-                  </button>
+                  </div>
                 ))}
-                <div style={{ fontSize: 11, color: C.textMute, textAlign: "center", marginTop: 4 }}>
-                  Passwort: <code style={{ fontFamily: "monospace" }}>demo2026</code>
-                </div>
               </div>
             )}
           </div>
-        </div>
-
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 11, color: C.textMute }}>
-          © 2026 ppi talk GmbH · Web Intelligence Platform
         </div>
       </div>
     </div>
