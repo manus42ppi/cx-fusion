@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Globe, GitCompare, Briefcase, BookText, Bot, Layers, Code2, ListChecks } from "lucide-react";
+import { LayoutDashboard, Globe, GitCompare, Briefcase, BookText, Bot, Layers, Code2, ListChecks, LogOut } from "lucide-react";
 import { C, T, FONT, IW } from "../../constants/colors.js";
 import { useApp } from "../../context/AppContext.jsx";
 
@@ -72,7 +72,7 @@ function NavBtn({ id, label, Icon, desc, nav, goNav, active, accentColor, accent
 }
 
 export default function Sidebar() {
-  const { nav, goNav } = useApp();
+  const { nav, goNav, user, handleLogout } = useApp();
   return (
     <aside style={{
       width: 240,
@@ -139,8 +139,52 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      {/* User + Logout */}
+      {user && (
+        <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Avatar */}
+            <div style={{
+              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+              background: user.imageUrl ? "transparent" : C.accentLight,
+              border: `1px solid ${C.accent}30`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 12, fontWeight: 800, color: C.accent, overflow: "hidden",
+            }}>
+              {user.imageUrl
+                ? <img src={user.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : (user.initials || user.name?.slice(0,2).toUpperCase() || "?")}
+            </div>
+            {/* Name + email */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user.name}
+              </div>
+              <div style={{ fontSize: 10, color: C.textMute, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user.email}
+              </div>
+            </div>
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              title="Abmelden"
+              style={{
+                width: 30, height: 30, borderRadius: T.rSm, flexShrink: 0,
+                background: "transparent", border: `1px solid ${C.border}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all .15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.borderColor = "#fca5a5"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = C.border; }}
+            >
+              <LogOut size={13} color={C.textSoft} strokeWidth={IW} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
-      <div style={{ padding: "12px 14px 16px", borderTop: `1px solid ${C.border}` }}>
+      <div style={{ padding: "10px 14px 14px", borderTop: `1px solid ${C.border}` }}>
         <div style={{
           fontSize: 10, color: C.textMute, lineHeight: 1.9,
           padding: "8px 10px", background: C.bg, borderRadius: T.rSm,
