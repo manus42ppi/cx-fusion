@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "/usr/local/bin/node node_modules/vite/bin/vite.js",
     "server": "node local-server.js",
-    "build": "vite build",
+    "build": "npx vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
