@@ -28,27 +28,34 @@ export async function onRequestPost(ctx) {
 
 Analysiere den Markt für Web-Analytics/SEO-Tools (Ahrefs, SEMrush, Sistrix, Screaming Frog, etc.) und identifiziere die wertvollsten FEHLENDEN Features.
 
-Antworte NUR mit JSON:
+Antworte NUR mit diesem JSON (kein Markdown, keine Erklärungen, nur reines JSON):
 {
   "generatedAt": "${new Date().toISOString()}",
   "topGaps": [
-    {"id":string,"name":string,"why":string,"impact":"high"|"medium"|"low","effort":"low"|"medium"|"high","priority":"P1"|"P2"|"P3","category":string,"competitorHas":string[]}
+    {"id":"g1","name":"Feature-Name","why":"Warum wichtig","impact":"high","effort":"low","priority":"P1","category":"SEO","competitorHas":["Ahrefs","SEMrush"]}
   ],
-  "quickWins": [{"id":string,"name":string,"description":string,"uiHint":string,"hours":number}],
-  "nextFeature": {"id":string,"name":string,"description":string,"category":string},
-  "marketTrends": string[],
-  "generatedCode": string,
-  "summary": string
+  "quickWins": [{"id":"q1","name":"Quick Win Name","description":"Kurze Beschreibung","uiHint":"UI Hinweis","hours":4}],
+  "nextFeature": {"id":"f1","name":"Wichtigstes Feature","description":"Kurze Beschreibung","category":"Analytics"},
+  "marketTrends": ["Trend 1","Trend 2","Trend 3"],
+  "summary": "Zusammenfassung in 1-2 Sätzen"
 }
 
-Identifiziere 6-8 echte Marktlücken die noch NICHT in der implementierten Feature-Liste sind. nextFeature = höchste Priorität. Für nextFeature: generiere echten React-JSX-Code als generatedCode (kompakte Seite, max ~60 Zeilen). marketTrends: 3-5 aktuelle Trends als Strings. competitorHas: welche Tools diese Lücke haben.` }],
+Regeln: Identifiziere 6-8 echte Marktlücken. nextFeature = höchste Priorität. marketTrends: 3-5 aktuelle Trends. Kein Code-Feld, kein Markdown, nur valides JSON.` }],
       }),
     });
 
     const data = await res.json();
+    if (!res.ok || data?.type === "error") {
+      throw new Error(data?.error?.message || `Anthropic API Fehler: ${res.status}`);
+    }
     const text = data?.content?.[0]?.text || "{}";
-    const json = text.match(/\{[\s\S]*\}/s)?.[0] || "{}";
-    const parsed = JSON.parse(json);
+    const jsonMatch = text.match(/\{[\s\S]*\}/s)?.[0] || "{}";
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonMatch);
+    } catch {
+      throw new Error("KI-Antwort konnte nicht als JSON gelesen werden. Bitte erneut versuchen.");
+    }
 
     // Store in KV if available
     if (ctx.env.CXF_KV) {
