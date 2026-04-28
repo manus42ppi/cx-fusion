@@ -12,8 +12,8 @@ export async function onRequestPost(ctx) {
       body: JSON.stringify({
         model: "claude-sonnet-4-6", max_tokens: 2000,
         messages: [{ role: "user", content: `Du bist ein Code-Review-Experte für die ${context}. Analysiere typische Probleme und schlage Verbesserungen vor. Antworte NUR mit JSON:
-{"suggestions":[{"title":string,"priority":"P1"|"P2"|"P3","file":string,"problem":string,"description":string,"solution":string}],"summary":string}
-Erstelle 3-5 realistische, konkrete Verbesserungsvorschläge für eine Web-Analyse-Plattform (Performance, UX, Fehlerbehandlung, Code-Qualität).` }],
+{"patterns":[{"type":string,"count":number,"severity":"high"|"medium"|"low","description":string}],"suggestions":[{"title":string,"priority":"P1"|"P2"|"P3","file":string,"problem":string,"description":string,"solution":string,"code":string}],"summary":string,"generatedAt":"${new Date().toISOString()}"}
+Erstelle 2-4 realistische Fehler-Muster (patterns) und 3-5 konkrete Verbesserungsvorschläge (suggestions) für eine Web-Analyse-Plattform (Performance, UX, Fehlerbehandlung, Code-Qualität). Bei suggestions: code-Feld optional mit kurzem Beispiel-Snippet.` }],
       }),
     });
     const data = await res.json();

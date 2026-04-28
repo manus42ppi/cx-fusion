@@ -31,15 +31,17 @@ Analysiere den Markt für Web-Analytics/SEO-Tools (Ahrefs, SEMrush, Sistrix, Scr
 Antworte NUR mit JSON:
 {
   "generatedAt": "${new Date().toISOString()}",
-  "marketGaps": [
-    {"id":string,"title":string,"description":string,"impact":"high"|"medium"|"low","effort":"low"|"medium"|"high","priority":"P1"|"P2"|"P3","category":string}
+  "topGaps": [
+    {"id":string,"name":string,"why":string,"impact":"high"|"medium"|"low","effort":"low"|"medium"|"high","priority":"P1"|"P2"|"P3","category":string,"competitorHas":string[]}
   ],
-  "quickWins": [{"id":string,"title":string,"description":string,"hours":number}],
-  "nextFeature": {"id":string,"title":string,"description":string,"category":string},
+  "quickWins": [{"id":string,"name":string,"description":string,"uiHint":string,"hours":number}],
+  "nextFeature": {"id":string,"name":string,"description":string,"category":string},
+  "marketTrends": string[],
+  "generatedCode": string,
   "summary": string
 }
 
-Identifiziere 6-8 echte Marktlücken die noch NICHT in der implementierten Feature-Liste sind. nextFeature = höchste Priorität.` }],
+Identifiziere 6-8 echte Marktlücken die noch NICHT in der implementierten Feature-Liste sind. nextFeature = höchste Priorität. Für nextFeature: generiere echten React-JSX-Code als generatedCode (kompakte Seite, max ~60 Zeilen). marketTrends: 3-5 aktuelle Trends als Strings. competitorHas: welche Tools diese Lücke haben.` }],
       }),
     });
 
