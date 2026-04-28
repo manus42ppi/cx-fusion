@@ -160,7 +160,7 @@ export default function ImprovePage() {
     const res = await fetch(url, opts);
     let data;
     try { data = await res.json(); } catch { data = {}; }
-    if (!res.ok) throw new Error(data?.error || `Server nicht erreichbar (HTTP ${res.status}). Läuft local-server.js?`);
+    if (!res.ok) throw new Error(data?.error || `Fehler (HTTP ${res.status})`);
     if (data?.error) throw new Error(data.error);
     return data;
   }
@@ -227,18 +227,26 @@ export default function ImprovePage() {
   async function runBugAnalysis() {
     setBugStatus("loading"); setErrMsg("");
     try {
-      const data = await apiFetch("/improve-analyze", { signal: AbortSignal.timeout(90000) });
+      const data = await apiFetch("/improve-analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(90000),
+      });
       setBugResult(data); setBugStatus("done");
     } catch (e) { setErrMsg(e.message); setBugStatus("error"); }
   }
 
   function runResearch() {
     setFeatStatus("loading"); setErrMsg("");
-    // Fire-and-forget: no AbortSignal, no blocking await; server responds in ms
-    fetch("/improve-research")
+    fetch("/improve-research", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    })
       .then(r => r.json())
       .then(d => { if (d.error && !d.running) { setErrMsg(d.error); setFeatStatus("error"); } })
-      .catch(() => { setErrMsg("Server nicht erreichbar. Läuft local-server.js?"); setFeatStatus("error"); });
+      .catch(e => { setErrMsg("Analyse konnte nicht gestartet werden: " + e.message); setFeatStatus("error"); });
     // Start fast polling immediately regardless of trigger response
     startPolling(true);
   }
