@@ -3,7 +3,7 @@ import { Globe, Plus, Trash2, TrendingUp, TrendingDown, Minus, Search, ExternalL
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge, SectionTitle, Divider } from "../components/ui/index.jsx";
 import { useApp } from "../context/AppContext.jsx";
-import { fmtDate, fmtNum, loadReports } from "../utils/api.js";
+import { fmtDate, fmtNum } from "../utils/api.js";
 
 const TREND_ICON  = { wachsend: TrendingUp, stabil: Minus, rückläufig: TrendingDown };
 const TREND_COLOR = { wachsend: C.success,  stabil: C.warning, rückläufig: "#ef4444" };
@@ -26,7 +26,7 @@ function gradeColor(g) {
 }
 
 export default function DashboardPage() {
-  const { clients, addClient, removeClient, goNav } = useApp();
+  const { clients, addClient, removeClient, goNav, reports } = useApp();
   const [newDomain, setNewDomain] = useState("");
   const [newName,   setNewName]   = useState("");
   const [showAdd,   setShowAdd]   = useState(false);
@@ -50,7 +50,7 @@ export default function DashboardPage() {
     setNewDomain(""); setNewName(""); setShowAdd(false);
   }
 
-  const savedReports = loadReports();
+  const savedReports = reports;
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 28px" }}>

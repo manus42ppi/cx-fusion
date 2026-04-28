@@ -43,61 +43,150 @@ export function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+// ---------------------------------------------------------------------------
+// KV helpers – sync with Cloudflare KV (graceful fallback on error / local dev)
+// ---------------------------------------------------------------------------
+
+async function kvGet(key) {
+  try {
+    const res = await fetch(`/store?key=${encodeURIComponent(key)}`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function kvSet(key, value) {
+  try {
+    await fetch("/store", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, value }),
+    });
+  } catch {}
+}
+
+// ---------------------------------------------------------------------------
+// Clients
+// ---------------------------------------------------------------------------
+
 const STORAGE_KEY = "cxf_clients";
 
-export function loadClients() {
+/** Load from localStorage immediately (sync fast path). */
+export function loadClientsSync() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
   catch { return []; }
 }
 
+/**
+ * Load clients – tries KV first, falls back to localStorage.
+ * Returns a Promise<Array>.
+ */
+export async function loadClients() {
+  const kv = await kvGet(STORAGE_KEY);
+  if (kv !== null) {
+    // Keep localStorage in sync for offline fallback
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadClientsSync();
+}
+
 export function saveClients(clients) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  kvSet(STORAGE_KEY, clients);
 }
+
+// ---------------------------------------------------------------------------
+// Website analysis reports
+// ---------------------------------------------------------------------------
 
 const REPORTS_KEY = "cxf_reports";
 
-export function loadReports() {
+/** Sync fast path for initial render. */
+export function loadReportsSync() {
   try { return JSON.parse(localStorage.getItem(REPORTS_KEY) || "{}"); }
   catch { return {}; }
 }
 
+/** Load reports – tries KV first, falls back to localStorage. */
+export async function loadReports() {
+  const kv = await kvGet(REPORTS_KEY);
+  if (kv !== null) {
+    try { localStorage.setItem(REPORTS_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadReportsSync();
+}
+
 export function saveReport(domain, data) {
-  const all = loadReports();
+  const all = loadReportsSync();
   const savedAt = new Date().toISOString();
   all[domain] = { ...data, savedAt };
   localStorage.setItem(REPORTS_KEY, JSON.stringify(all));
+  kvSet(REPORTS_KEY, all);
   _addToHistory(domain, "website", savedAt, data);
 }
 
+// ---------------------------------------------------------------------------
+// Content audit reports
+// ---------------------------------------------------------------------------
+
 const CONTENT_REPORTS_KEY = "cxf_content_reports";
 
-export function loadContentReports() {
+export function loadContentReportsSync() {
   try { return JSON.parse(localStorage.getItem(CONTENT_REPORTS_KEY) || "{}"); }
   catch { return {}; }
 }
 
+export async function loadContentReports() {
+  const kv = await kvGet(CONTENT_REPORTS_KEY);
+  if (kv !== null) {
+    try { localStorage.setItem(CONTENT_REPORTS_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadContentReportsSync();
+}
+
 export function saveContentReport(domain, data) {
-  const all = loadContentReports();
+  const all = loadContentReportsSync();
   const savedAt = new Date().toISOString();
   all[domain] = { ...data, savedAt };
   localStorage.setItem(CONTENT_REPORTS_KEY, JSON.stringify(all));
+  kvSet(CONTENT_REPORTS_KEY, all);
   _addToHistory(domain, "content", savedAt, data);
 }
+
+// ---------------------------------------------------------------------------
+// History
+// ---------------------------------------------------------------------------
 
 const HISTORY_KEY = "cxf_history";
 const HISTORY_MAX = 20;
 
 function _addToHistory(domain, type, savedAt, data) {
-  const all = loadClientHistory();
+  const all = loadClientHistorySync();
   const existing = all[domain] || [];
   const summary = type === "website"
     ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.psi?.score, trendSignal: data?.ai?.trendSignal }
     : { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
   all[domain] = [{ id: uid(), type, savedAt, summary }, ...existing].slice(0, HISTORY_MAX);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+  kvSet(HISTORY_KEY, all);
 }
 
-export function loadClientHistory() {
+export function loadClientHistorySync() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "{}"); }
   catch { return {}; }
+}
+
+export async function loadClientHistory() {
+  const kv = await kvGet(HISTORY_KEY);
+  if (kv !== null) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadClientHistorySync();
 }

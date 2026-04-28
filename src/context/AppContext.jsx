@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
-import { loadClients, saveClients, loadReports, saveReport, loadContentReports, saveContentReport, loadClientHistory, uid } from "../utils/api.js";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import {
+  loadClientsSync, loadClients, saveClients,
+  loadReportsSync, loadReports,
+  loadContentReportsSync, loadContentReports,
+  loadClientHistorySync, loadClientHistory,
+  saveReport, saveContentReport,
+  uid,
+} from "../utils/api.js";
 
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -14,13 +21,24 @@ function loadSession() {
 export function AppProvider({ children }) {
   const [user, setUser]           = useState(() => loadSession());
   const [nav, setNav]             = useState("dashboard");
-  const [clients, setClients]     = useState(() => loadClients());
-  const [reports, setReports]     = useState(() => loadReports());
-  const [contentReports, setContentReports] = useState(() => loadContentReports());
-  const [clientHistory, setClientHistory]   = useState(() => loadClientHistory());
+
+  // Fast initial state from localStorage, then KV hydration via useEffect
+  const [clients, setClients]             = useState(() => loadClientsSync());
+  const [reports, setReports]             = useState(() => loadReportsSync());
+  const [contentReports, setContentReports] = useState(() => loadContentReportsSync());
+  const [clientHistory, setClientHistory]   = useState(() => loadClientHistorySync());
+
   const [activeReport, setActiveReport] = useState(null);
   const [compareDomains, setCompareDomains] = useState([]);
   const [pendingDomain, setPendingDomain]   = useState(null);
+
+  // Hydrate from KV on mount (source of truth across devices)
+  useEffect(() => {
+    loadClients().then(data => setClients(data));
+    loadReports().then(data => setReports(data));
+    loadContentReports().then(data => setContentReports(data));
+    loadClientHistory().then(data => setClientHistory(data));
+  }, []);
 
   const login = useCallback((u) => {
     localStorage.setItem(SESSION_KEY, JSON.stringify(u));
@@ -61,13 +79,13 @@ export function AppProvider({ children }) {
   const persistReport = useCallback((domain, data) => {
     saveReport(domain, data);
     setReports(prev => ({ ...prev, [domain]: { ...data, savedAt: new Date().toISOString() } }));
-    setClientHistory(loadClientHistory());
+    loadClientHistory().then(h => setClientHistory(h));
   }, []);
 
   const persistContentReport = useCallback((domain, data) => {
     saveContentReport(domain, data);
     setContentReports(prev => ({ ...prev, [domain]: { ...data, savedAt: new Date().toISOString() } }));
-    setClientHistory(loadClientHistory());
+    loadClientHistory().then(h => setClientHistory(h));
   }, []);
 
   return (
