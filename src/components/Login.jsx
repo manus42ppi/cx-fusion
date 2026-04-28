@@ -79,14 +79,21 @@ export default function Login({ onLogin }) {
 
         {/* Logo */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 40 }}>
-            <div style={{ width: 40, height: 40, borderRadius: T.rMd, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Globe size={20} color="#fff" strokeWidth={IW} />
+          <div style={{ marginBottom: 40 }}>
+            <img
+              src="/ppitalk-logo-white.png"
+              alt="ppi talk"
+              style={{ height: 44, width: "auto", objectFit: "contain", display: "block", marginBottom: 10 }}
+              onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+            />
+            {/* Fallback if white logo missing */}
+            <div style={{ display: "none", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: T.rMd, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Globe size={20} color="#fff" strokeWidth={IW} />
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: FONT_DISPLAY }}>ppi talk</div>
             </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: FONT_DISPLAY, letterSpacing: "-.01em" }}>CX Fusion</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", fontWeight: 600, letterSpacing: ".06em" }}>WEB INTELLIGENCE</div>
-            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", marginTop: 4 }}>CX Fusion · Web Intelligence</div>
           </div>
 
           <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 14px", lineHeight: 1.2, letterSpacing: "-.02em" }}>
