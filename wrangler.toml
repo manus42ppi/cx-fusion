@@ -1,10 +1,8 @@
+name = "cx-fusion-ai"
+compatibility_date = "2024-01-01"
+
 [build]
-command = "npm run build"
-upload.dir = "dist"
+command = "vite build"
 
-[site]
-bucket = "./dist"
-
-[[env.production.vars]]
-name = "ENVIRONMENT"
-value = "production"
+[pages_build_output_dir]
+value = "dist"

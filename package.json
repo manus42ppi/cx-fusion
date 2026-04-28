@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "/usr/local/bin/node node_modules/vite/bin/vite.js",
     "server": "node local-server.js",
-    "build": "/usr/local/bin/node node_modules/vite/bin/vite.js build",
-    "preview": "/usr/local/bin/node node_modules/vite/bin/vite.js preview",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
