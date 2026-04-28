@@ -57,7 +57,7 @@ const ST = {
 const PRIORITY_COLOR = { high: "#dc2626", medium: "#d97706", low: C.textMute };
 
 // ── Page Card ─────────────────────────────────────────────────────────────────
-function PageCard({ page }) {
+function PageCard({ page, rawSchemas }) {
   const [open, setOpen] = useState(false);
   const st = ST[page.status] || ST.warning;
   const Ico = st.icon;
@@ -120,13 +120,22 @@ function PageCard({ page }) {
             <div style={{ fontSize: 12, color: C.success, padding: "8px 0" }}>✓ Keine Probleme gefunden</div>
           )}
 
-          {/* Raw schema (collapsed) */}
-          {page.schemaRaw && Object.keys(page.schemaRaw).length > 0 && (
+          {/* Real extracted JSON-LD (from backend extraction, not AI response) */}
+          {rawSchemas?.length > 0 && (
             <details style={{ marginTop: 10 }}>
-              <summary style={{ fontSize: 11, color: C.textMute, cursor: "pointer", userSelect: "none" }}>JSON-LD anzeigen</summary>
-              <pre style={{ marginTop: 6, padding: "10px 12px", borderRadius: T.rSm, background: "#0f172a", color: "#e2e8f0", fontSize: 10.5, lineHeight: 1.6, overflow: "auto", maxHeight: 300, fontFamily: "monospace" }}>
-                {JSON.stringify(page.schemaRaw, null, 2)}
-              </pre>
+              <summary style={{ fontSize: 11, color: C.textMute, cursor: "pointer", userSelect: "none" }}>
+                Gefundene JSON-LD Blöcke ({rawSchemas.length}) anzeigen
+              </summary>
+              {rawSchemas.map((s, k) => (
+                <div key={k} style={{ marginTop: 6 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: s.parseError ? "#dc2626" : C.accent, marginBottom: 3 }}>
+                    Block {k + 1}: {s.type} {s.parseError ? "⚠ Syntaxfehler" : ""}
+                  </div>
+                  <pre style={{ padding: "8px 12px", borderRadius: T.rSm, background: "#0f172a", color: "#e2e8f0", fontSize: 10.5, lineHeight: 1.6, overflow: "auto", maxHeight: 260, fontFamily: "monospace", margin: 0 }}>
+                    {s.raw ? JSON.stringify(s.raw, null, 2) : "(Syntaxfehler – kein gültiges JSON)"}
+                  </pre>
+                </div>
+              ))}
             </details>
           )}
         </div>
@@ -256,7 +265,11 @@ export default function FeatSchemaValidatorPage() {
           {result.pages?.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>Analysierte Seiten</div>
-              {result.pages.map((page, i) => <PageCard key={i} page={page} />)}
+              {result.pages.map((page, i) => {
+                // Match real extracted schemas by URL
+                const rawPage = result._pages_raw?.find(p => p.url === page.url) || result._pages_raw?.[i];
+                return <PageCard key={i} page={page} rawSchemas={rawPage?.schemas} />;
+              })}
             </div>
           )}
 
