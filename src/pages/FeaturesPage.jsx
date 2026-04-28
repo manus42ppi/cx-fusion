@@ -32,46 +32,79 @@ function fmtDate(iso) {
 }
 
 function FeatureCard({ feat, isNew }) {
+  const [open, setOpen] = useState(false);
   const Icon = PAGE_ICONS[feat.page?.split(" ")[0]] || CheckCircle;
+  const CATEGORY_COLOR = {
+    Analyse: C.accent, SEO: "#7c3aed", CRM: "#059669", System: "#d97706",
+  };
+  const catColor = CATEGORY_COLOR[feat.category] || C.textMute;
+
   return (
     <div style={{
-      padding: "14px 16px", borderRadius: T.rMd,
-      background: isNew ? C.accentLight : C.surface,
+      borderRadius: T.rMd,
+      background: isNew ? C.accentLight + "60" : C.surface,
       border: `1px solid ${isNew ? C.accent + "40" : C.border}`,
-      display: "flex", alignItems: "flex-start", gap: 12,
-      transition: "box-shadow 0.15s",
+      overflow: "hidden", transition: "box-shadow 0.15s",
     }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: T.rMd, flexShrink: 0,
-        background: isNew ? C.accent + "15" : C.bg,
-        border: `1px solid ${isNew ? C.accent + "30" : C.border}`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Icon size={16} color={isNew ? C.accent : C.textMid} strokeWidth={IW} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{feat.label || feat.name}</span>
-          {isNew && (
-            <span style={{ fontSize: 9, fontWeight: 800, color: C.accent, background: C.accentLight, border: `1px solid ${C.accent}30`, padding: "1px 7px", borderRadius: 99, letterSpacing: ".05em" }}>
-              NEU
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", gap: 12,
+          padding: "14px 16px", background: "none", border: "none",
+          cursor: "pointer", textAlign: "left", fontFamily: FONT,
+        }}
+      >
+        <div style={{
+          width: 36, height: 36, borderRadius: T.rMd, flexShrink: 0,
+          background: isNew ? C.accent + "15" : C.bg,
+          border: `1px solid ${isNew ? C.accent + "30" : C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Icon size={16} color={isNew ? C.accent : C.textMid} strokeWidth={IW} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{feat.label || feat.name}</span>
+            {isNew && (
+              <span style={{ fontSize: 9, fontWeight: 800, color: C.accent, background: C.accentLight, border: `1px solid ${C.accent}30`, padding: "1px 7px", borderRadius: 99, letterSpacing: ".05em" }}>NEU</span>
+            )}
+            <span style={{ fontSize: 10, fontWeight: 600, color: catColor, background: catColor + "12", padding: "1px 8px", borderRadius: 99 }}>
+              {feat.category}
             </span>
-          )}
-          {feat.addedAt && (
-            <span style={{ fontSize: 10, color: C.textMute, marginLeft: "auto" }}>
-              <Clock size={9} strokeWidth={IW} style={{ marginRight: 3 }} />
-              {fmtDate(feat.addedAt)}
-            </span>
+            {feat.since && (
+              <span style={{ fontSize: 10, color: C.textMute, marginLeft: "auto" }}>seit {feat.since}</span>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: C.textSoft, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: open ? "normal" : "nowrap" }}>
+            {feat.desc || feat.category || ""}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <CheckCircle size={14} color={C.success} strokeWidth={IW} />
+          <span style={{ fontSize: 10, color: C.textMute }}>{open ? "▲" : "▼"}</span>
+        </div>
+      </button>
+
+      {open && (
+        <div style={{ padding: "0 16px 16px 64px", borderTop: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.7, margin: "12px 0 10px" }}>
+            {feat.desc}
+          </p>
+          {feat.highlights?.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {feat.highlights.map(h => (
+                <span key={h} style={{
+                  fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 99,
+                  background: C.bg, border: `1px solid ${C.border}`, color: C.textMid,
+                  display: "flex", alignItems: "center", gap: 5,
+                }}>
+                  <CheckCircle size={9} color={C.success} strokeWidth={IW} /> {h}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-        <div style={{ fontSize: 11, color: C.textSoft, lineHeight: 1.5 }}>{feat.desc || feat.category || ""}</div>
-        {feat.page && (
-          <div style={{ fontSize: 10, color: C.textMute, marginTop: 4, fontFamily: "monospace" }}>
-            {feat.page}
-          </div>
-        )}
-      </div>
-      <CheckCircle size={14} color={C.success} strokeWidth={IW} style={{ flexShrink: 0, marginTop: 2 }} />
+      )}
     </div>
   );
 }
@@ -94,14 +127,18 @@ function GapCard({ gap, idx }) {
           {EFFORT_LABEL[gap.effort] || gap.effort}
         </span>
       </button>
-      {open && gap.why && (
-        <div style={{ padding: "0 14px 12px 50px", fontSize: 12, color: C.textSoft, lineHeight: 1.6, borderTop: `1px solid ${C.border}` }}>
-          <div style={{ paddingTop: 10 }}>{gap.why}</div>
+      {open && (
+        <div style={{ padding: "0 14px 14px 50px", borderTop: `1px solid ${C.border}` }}>
+          {(gap.why || gap.desc) && (
+            <p style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.7, margin: "10px 0 8px" }}>
+              {gap.why || gap.desc}
+            </p>
+          )}
           {gap.competitorHas?.length > 0 && (
-            <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 10, color: C.textMute }}>Haben es:</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 10, color: C.textMute, fontWeight: 600 }}>Haben es bereits:</span>
               {gap.competitorHas.map(c => (
-                <span key={c} style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: C.border, color: C.textSoft }}>{c}</span>
+                <span key={c} style={{ fontSize: 10, fontWeight: 600, padding: "2px 9px", borderRadius: 99, background: C.accent + "12", color: C.accent, border: `1px solid ${C.accent}25` }}>{c}</span>
               ))}
             </div>
           )}
