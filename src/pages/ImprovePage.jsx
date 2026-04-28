@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo, useMemo } from "react";
 import {
   Bot, RefreshCw, AlertTriangle, CheckCircle, Zap,
   ChevronDown, ChevronUp, BarChart2, Lightbulb, Clock,
@@ -66,7 +66,7 @@ function CodeBlock({ code }) {
   );
 }
 
-function BugSuggestionCard({ s, idx }) {
+const BugSuggestionCard = memo(function BugSuggestionCard({ s, idx }) {
   const [open, setOpen] = useState(idx === 0);
   const pm = PRIORITY_META[s.priority] || PRIORITY_META.P3;
   return (
@@ -100,9 +100,9 @@ function BugSuggestionCard({ s, idx }) {
       )}
     </Card>
   );
-}
+});
 
-function FeatureGapCard({ gap, idx }) {
+const FeatureGapCard = memo(function FeatureGapCard({ gap, idx }) {
   const [open, setOpen] = useState(idx === 0);
   const im = IMPACT_META[gap.impact] || IMPACT_META.medium;
   const ef = EFFORT_META[gap.effort] || EFFORT_META.medium;
@@ -137,7 +137,7 @@ function FeatureGapCard({ gap, idx }) {
       )}
     </Card>
   );
-}
+});
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -265,12 +265,12 @@ export default function ImprovePage() {
     } catch (e) { setApplyStatus(s => ({ ...s, [fileName]: "error: " + e.message })); }
   }
 
-  const statItems = [
+  const statItems = useMemo(() => [
     { icon: BarChart2, label: "Geloggte Fehler",   value: serverStatus?.logCount ?? "–", sub: "seit Server-Start",      color: C.accent },
     { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "Manuell", sub: serverStatus?.nextAutoRun ? "1× täglich automatisch" : "Lokal: 1× täglich · Jetzt: manuell", color: "#d97706" },
     { icon: History,   label: "Letzter Fehler-Lauf", value: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleDateString("de-DE") : "noch keiner", color: C.success },
     { icon: Target,    label: "Letzter Feature-Lauf", value: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleDateString("de-DE") : "noch keiner", color: "#7c3aed" },
-  ];
+  ], [serverStatus, countdown]);
 
   return (
     <div style={{ maxWidth: 920, margin: "0 auto", padding: "32px 24px 60px" }}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { C, T, FONT, IW } from "../../constants/colors.js";
 
 export function Sp({ h = 0, w = 0 }) {
@@ -28,7 +28,7 @@ export function Card({ children, style, onClick, hover }) {
   );
 }
 
-export function Btn({ children, onClick, variant = "primary", size = "md", style, disabled, icon: Icon }) {
+export const Btn = memo(function Btn({ children, onClick, variant = "primary", size = "md", style, disabled, icon: Icon }) {
   const [hov, setHov] = React.useState(false);
   const pad = size === "sm" ? "6px 12px" : size === "lg" ? "11px 22px" : "9px 16px";
   const fs  = size === "sm" ? 13 : size === "lg" ? 15 : 14;
@@ -71,7 +71,7 @@ export function Btn({ children, onClick, variant = "primary", size = "md", style
       {children}
     </button>
   );
-}
+});
 
 export function Badge({ children, color, bg, style }) {
   return (

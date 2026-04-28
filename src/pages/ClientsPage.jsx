@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import {
   Users, Plus, Globe, Trash2, Search, Calendar,
   TrendingUp, TrendingDown, Minus, ChevronRight, X,
@@ -20,7 +20,7 @@ function fmtK(n) {
 const TREND_ICONS  = { wachsend: TrendingUp, stabil: Minus, rückläufig: TrendingDown };
 const TREND_COLORS = { wachsend: C.success, stabil: C.warning, rückläufig: "#ef4444" };
 
-function ReportBox({ type, report, onOpen, onAnalyze }) {
+const ReportBox = memo(function ReportBox({ type, report, onOpen, onAnalyze }) {
   const isWebsite = type === "website";
   const icon = isWebsite ? Globe : BookText;
   const Icon = icon;
@@ -96,9 +96,9 @@ function ReportBox({ type, report, onOpen, onAnalyze }) {
       </div>
     </div>
   );
-}
+});
 
-function HistoryPanel({ domain, onOpenReport, onOpenContent }) {
+const HistoryPanel = memo(function HistoryPanel({ domain, onOpenReport, onOpenContent }) {
   const [entries, setEntries] = useState(() => loadFullHistorySync(domain));
 
   useEffect(() => {
@@ -202,7 +202,7 @@ function HistoryPanel({ domain, onOpenReport, onOpenContent }) {
       })}
     </div>
   );
-}
+});
 
 export default function ClientsPage() {
   const { clients, addClient, removeClient, reports, contentReports, clientHistory, setActiveReport, goNav } = useApp();
@@ -212,7 +212,7 @@ export default function ClientsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [openHistory, setOpenHistory] = useState({});
 
-  function handleAdd(e) {
+  const handleAdd = useCallback((e) => {
     e.preventDefault();
     const name   = form.name.trim();
     const domain = cleanDomain(form.domain);
@@ -222,9 +222,9 @@ export default function ClientsPage() {
     setForm({ name: "", domain: "" });
     setFormErr("");
     setShowForm(false);
-  }
+  }, [form, addClient]);
 
-  function openWebsiteReport(client, historicData) {
+  const openWebsiteReport = useCallback((client, historicData) => {
     const data = historicData || reports[client.domain];
     if (data) {
       setActiveReport({ domain: client.domain, ...data });
@@ -232,25 +232,25 @@ export default function ClientsPage() {
     } else {
       goNav("analyze", { domain: client.domain });
     }
-  }
+  }, [reports, setActiveReport, goNav]);
 
-  function openContentReport(client, historicData) {
+  const openContentReport = useCallback((client, historicData) => {
     const data = historicData || contentReports?.[client.domain];
     goNav("content", { domain: client.domain, report: data || null });
-  }
+  }, [contentReports, goNav]);
 
-  function handleDelete(id) {
+  const handleDelete = useCallback((id) => {
     if (deleteConfirm === id) {
       removeClient(id);
       setDeleteConfirm(null);
     } else {
       setDeleteConfirm(id);
     }
-  }
+  }, [deleteConfirm, removeClient]);
 
-  function toggleHistory(id) {
+  const toggleHistory = useCallback((id) => {
     setOpenHistory(prev => ({ ...prev, [id]: !prev[id] }));
-  }
+  }, []);
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px 60px" }}>

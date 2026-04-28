@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import {
   Upload, Play, Download, AlertCircle, CheckCircle,
   RefreshCw, Globe, X, BarChart2, Zap, Shield,
@@ -144,7 +144,8 @@ export default function BatchPage() {
     a.click();
   }
 
-  const hasResults = Object.keys(results).length > 0;
+  const parsedDomains = useMemo(() => parseDomains(input), [input]);
+  const hasResults = useMemo(() => Object.keys(results).length > 0, [results]);
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 60px" }}>
@@ -200,13 +201,13 @@ export default function BatchPage() {
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <Btn onClick={running ? stopBatch : runBatch} loading={running} icon={running ? X : Play}
                 style={{ background: running ? "#dc2626" : C.accent }}>
-                {running ? `Stopp (${progress}/${domains.length})` : `${parseDomains(input).length} Domains analysieren`}
+                {running ? `Stopp (${progress}/${domains.length})` : `${parsedDomains.length} Domains analysieren`}
               </Btn>
               {hasResults && (
                 <Btn variant="ghost" icon={Download} onClick={exportCSV}>CSV exportieren</Btn>
               )}
               <span style={{ fontSize: 11, color: C.textMute, marginLeft: "auto" }}>
-                {parseDomains(input).length}/50 Domains
+                {parsedDomains.length}/50 Domains
               </span>
             </div>
           </div>

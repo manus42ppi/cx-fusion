@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Badge } from "../components/ui/index.jsx";
 import {
@@ -31,7 +31,7 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function FeatureCard({ feat, isNew }) {
+const FeatureCard = memo(function FeatureCard({ feat, isNew }) {
   const [open, setOpen] = useState(false);
   const Icon = PAGE_ICONS[feat.page?.split(" ")[0]] || CheckCircle;
   const CATEGORY_COLOR = {
@@ -107,9 +107,9 @@ function FeatureCard({ feat, isNew }) {
       )}
     </div>
   );
-}
+});
 
-function GapCard({ gap, idx }) {
+const GapCard = memo(function GapCard({ gap, idx }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ borderRadius: T.rMd, border: `1px solid ${C.border}`, background: C.surface, overflow: "hidden" }}>
@@ -146,7 +146,7 @@ function GapCard({ gap, idx }) {
       )}
     </div>
   );
-}
+});
 
 export default function FeaturesPage() {
   const [manifest, setManifest] = useState(null);
@@ -171,11 +171,11 @@ export default function FeaturesPage() {
     load();
   }, []);
 
-  const implemented = manifest?.currentFeatures ?? [];
-  const newFeatures = implemented.filter(f => f.addedAt);
-  const coreFeatures = implemented.filter(f => !f.addedAt);
-  const gaps = features?.topGaps ?? [];
-  const quickWins = features?.quickWins ?? [];
+  const implemented = useMemo(() => manifest?.currentFeatures ?? [], [manifest]);
+  const newFeatures = useMemo(() => implemented.filter(f => f.addedAt), [implemented]);
+  const coreFeatures = useMemo(() => implemented.filter(f => !f.addedAt), [implemented]);
+  const gaps = useMemo(() => features?.topGaps ?? [], [features]);
+  const quickWins = useMemo(() => features?.quickWins ?? [], [features]);
 
   const TABS = [
     { id: "implemented", label: `Implementiert (${implemented.length})`, icon: CheckCircle },

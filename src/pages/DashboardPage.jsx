@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Globe, Plus, Trash2, TrendingUp, TrendingDown, Minus, Search, ExternalLink, Clock, X } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge, SectionTitle, Divider } from "../components/ui/index.jsx";
@@ -31,6 +31,16 @@ export default function DashboardPage() {
   const [newName,   setNewName]   = useState("");
   const [showAdd,   setShowAdd]   = useState(false);
 
+  const handleAdd = useCallback(() => {
+    if (!newDomain.trim()) return;
+    addClient(newName.trim() || newDomain.trim(), newDomain.trim());
+    setNewDomain(""); setNewName(""); setShowAdd(false);
+  }, [newDomain, newName, addClient]);
+
+  const recentReports = useMemo(() =>
+    Object.entries(savedReports).slice(0, 8)
+  , [savedReports]);
+
   const inp = (v, set) => (
     <input value={v} onChange={e => set(e.target.value)}
       style={{
@@ -43,12 +53,6 @@ export default function DashboardPage() {
       onBlur={e => e.target.style.borderColor = C.border}
     />
   );
-
-  function handleAdd() {
-    if (!newDomain.trim()) return;
-    addClient(newName.trim() || newDomain.trim(), newDomain.trim());
-    setNewDomain(""); setNewName(""); setShowAdd(false);
-  }
 
   const savedReports = reports;
 
@@ -182,7 +186,7 @@ export default function DashboardPage() {
         <>
           <SectionTitle sub="Zuletzt analysierte Domains">Letzte Reports</SectionTitle>
           <Card style={{ overflow: "hidden" }}>
-            {Object.entries(savedReports).slice(0, 8).map(([domain, rep], i, arr) => (
+            {recentReports.map(([domain, rep], i, arr) => (
               <div
                 key={domain}
                 onClick={() => goNav("report", { report: rep })}

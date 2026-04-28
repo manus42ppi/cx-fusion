@@ -1,20 +1,29 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { AppProvider, useApp } from "./context/AppContext.jsx";
 import Login from "./components/Login.jsx";
 import Sidebar from "./components/layout/Sidebar.jsx";
-import DashboardPage from "./pages/DashboardPage.jsx";
 import { C, FONT, CSS } from "./constants/colors.js";
-import AnalyzePage from "./pages/AnalyzePage.jsx";
-import ReportPage from "./pages/ReportPage.jsx";
-import ComparePage from "./pages/ComparePage.jsx";
-import ClientsPage from "./pages/ClientsPage.jsx";
-import ContentPage from "./pages/ContentPage.jsx";
-import ImprovePage from "./pages/ImprovePage.jsx";
-import FeaturesPage from "./pages/FeaturesPage.jsx";
+
+const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx"));
+const AnalyzePage   = lazy(() => import("./pages/AnalyzePage.jsx"));
+const ReportPage    = lazy(() => import("./pages/ReportPage.jsx"));
+const ComparePage   = lazy(() => import("./pages/ComparePage.jsx"));
+const ClientsPage   = lazy(() => import("./pages/ClientsPage.jsx"));
+const ContentPage   = lazy(() => import("./pages/ContentPage.jsx"));
+const ImprovePage   = lazy(() => import("./pages/ImprovePage.jsx"));
+const FeaturesPage  = lazy(() => import("./pages/FeaturesPage.jsx"));
 // ─── AUTO_IMPORTS_START ───────────────────────────────────────────────────────
-import FeatSchemaValidatorPage from "./pages/feat_feat-schema-validator.jsx";
+const FeatSchemaValidatorPage = lazy(() => import("./pages/feat_feat-schema-validator.jsx"));
 // ─── AUTO_IMPORTS_END ─────────────────────────────────────────────────────────
-import BatchPage from "./pages/BatchPage.jsx";
+const BatchPage = lazy(() => import("./pages/BatchPage.jsx"));
+
+function PageFallback() {
+  return (
+    <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", padding: 60 }}>
+      <div style={{ width: 24, height: 24, border: `3px solid ${C.accent}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+    </div>
+  );
+}
 
 function Router() {
   const { nav } = useApp();
@@ -32,7 +41,11 @@ function Router() {
 // ─── AUTO_ROUTES_END ──────────────────────────────────────────────────────────
     batch:     <BatchPage />,
   };
-  return pages[nav] || <DashboardPage />;
+  return (
+    <Suspense fallback={<PageFallback />}>
+      {pages[nav] || <DashboardPage />}
+    </Suspense>
+  );
 }
 
 function AppShell() {

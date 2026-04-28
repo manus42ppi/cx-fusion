@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import {
   loadClientsSync, loadClients, saveClients,
@@ -107,26 +107,38 @@ export function AppProvider({ children }) {
     loadClientHistory().then(h => setClientHistory(h));
   }, []);
 
+  const ctxValue = useMemo(() => ({
+    // Auth
+    isLoaded,
+    user,
+    demoUser,
+    setDemoUser,
+    handleLogout,
+    // Navigation
+    nav, goNav,
+    // Clients
+    clients, addClient, removeClient,
+    // Reports
+    activeReport, setActiveReport,
+    compareDomains, setCompareDomains,
+    pendingDomain, setPendingDomain,
+    reports, persistReport,
+    contentReports, persistContentReport,
+    clientHistory,
+  }), [
+    isLoaded, user, demoUser, handleLogout,
+    nav, goNav,
+    clients, addClient, removeClient,
+    activeReport, setActiveReport,
+    compareDomains, setCompareDomains,
+    pendingDomain, setPendingDomain,
+    reports, persistReport,
+    contentReports, persistContentReport,
+    clientHistory,
+  ]);
+
   return (
-    <Ctx.Provider value={{
-      // Auth
-      isLoaded,
-      user,
-      demoUser,
-      setDemoUser,
-      handleLogout,
-      // Navigation
-      nav, goNav,
-      // Clients
-      clients, addClient, removeClient,
-      // Reports
-      activeReport, setActiveReport,
-      compareDomains, setCompareDomains,
-      pendingDomain, setPendingDomain,
-      reports, persistReport,
-      contentReports, persistContentReport,
-      clientHistory,
-    }}>
+    <Ctx.Provider value={ctxValue}>
       {children}
     </Ctx.Provider>
   );

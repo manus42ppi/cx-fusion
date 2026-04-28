@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../../constants/colors.js";
 import { RefreshCw } from "lucide-react";
 
@@ -23,13 +23,12 @@ export default function AnalysisProgress({
 
   const color = accent || C.accent;
 
-  const defaultSteps = [
+  const msgs = useMemo(() => steps.length > 0 ? steps : [
     "Verbinde mit Domain…",
     "Lade Daten…",
     "KI analysiert…",
     "Ergebnisse aufbereiten…",
-  ];
-  const msgs = steps.length > 0 ? steps : defaultSteps;
+  ], [steps]);
 
   useEffect(() => {
     if (!loading) {
