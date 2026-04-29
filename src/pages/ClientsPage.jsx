@@ -282,12 +282,46 @@ const HistoryPanel = memo(function HistoryPanel({ domain, onOpen }) {
 
 // ─── Strategieplan Modal ──────────────────────────────────────────────────────
 
+const PROGRESS_STEPS = [
+  { pct: 10, label: "Reports werden aggregiert…" },
+  { pct: 30, label: "KI analysiert Website-Daten…" },
+  { pct: 55, label: "Maßnahmen werden priorisiert…" },
+  { pct: 75, label: "Zeitrahmen & Impact werden berechnet…" },
+  { pct: 90, label: "Strategieplan wird finalisiert…" },
+];
+
 const StratModal = memo(function StratModal({ client, reports, contentReports, schemaReports, socialReports, onClose }) {
   const storageKey = `cxf_strat_${(client.domain || "").replace(/\./g, "_")}`;
-  const [plan, setPlan]         = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const abortRef = useRef(null);
+  const [plan, setPlan]           = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [progress, setProgress]   = useState(0);  // 0-100
+  const [progLabel, setProgLabel] = useState("");
+  const [error, setError]         = useState("");
+  const abortRef    = useRef(null);
+  const timerRef    = useRef(null);
+
+  // Animate progress through steps while loading
+  const startProgress = useCallback(() => {
+    let step = 0;
+    setProgress(PROGRESS_STEPS[0].pct);
+    setProgLabel(PROGRESS_STEPS[0].label);
+    const durations = [1800, 3500, 4000, 5000, 99999]; // ms per step
+    const advance = () => {
+      step++;
+      if (step < PROGRESS_STEPS.length) {
+        setProgress(PROGRESS_STEPS[step].pct);
+        setProgLabel(PROGRESS_STEPS[step].label);
+        timerRef.current = setTimeout(advance, durations[step]);
+      }
+    };
+    timerRef.current = setTimeout(advance, durations[0]);
+  }, []);
+
+  const stopProgress = useCallback(() => {
+    clearTimeout(timerRef.current);
+    setProgress(100);
+    setProgLabel("Fertig!");
+  }, []);
 
   useEffect(() => {
     try {
@@ -296,6 +330,7 @@ const StratModal = memo(function StratModal({ client, reports, contentReports, s
     } catch {}
     return () => {
       if (abortRef.current) abortRef.current.abort();
+      clearTimeout(timerRef.current);
     };
   }, [storageKey]);
 
@@ -310,6 +345,8 @@ const StratModal = memo(function StratModal({ client, reports, contentReports, s
   const handleGenerate = useCallback(async () => {
     setLoading(true);
     setError("");
+    setPlan(null);
+    startProgress();
 
     // Collect summary data only (stay within token limits)
     const websiteR = reports[client.domain];
@@ -359,56 +396,57 @@ const StratModal = memo(function StratModal({ client, reports, contentReports, s
       };
     }
 
-    const prompt = `Du bist ein erfahrener Digital-Marketing-Stratege. Analysiere die vorliegenden Daten für den Kunden "${client.name}" (Domain: ${client.domain}) und erstelle einen konkreten, datenbasierten Strategieplan.
+    const prompt = `Du bist ein Digital-Marketing-Stratege. Erstelle einen kompakten Strategieplan für "${client.name}" (${client.domain}).
 
-Verfügbare Analysedaten:
-${JSON.stringify(dataSummary, null, 2)}
+Daten:
+${JSON.stringify(dataSummary)}
 
-Antworte AUSSCHLIESSLICH mit validem JSON in exakt diesem Format:
-{
-  "executive_summary": "2-3 Sätze Gesamtbewertung",
-  "current_score": { "overall": 0-100, "label": "gut|ausbaufähig|kritisch" },
-  "priorities": [
-    {
-      "rank": 1,
-      "category": "traffic|content|technical|social",
-      "title": "Kurzer Titel",
-      "problem": "Was ist das konkrete Problem (mit Daten)",
-      "action": "Was genau tun",
-      "impact": "Welche Kennzahl verbessert sich wie stark",
-      "timeline": "In X Wochen/Monaten",
-      "effort": "low|medium|high",
-      "kpis": ["Kennzahl 1", "Kennzahl 2"]
-    }
-  ],
-  "forecast_90_days": "Was realistisch in 90 Tagen erreichbar ist",
-  "quick_wins": ["Sofortmaßnahme 1", "Sofortmaßnahme 2", "Sofortmaßnahme 3"]
-}
+WICHTIG: Antworte NUR mit diesem JSON. Alle Textwerte MAXIMAL 20 Wörter. Genau 3 Prioritäten.
 
-Erstelle 3-5 Prioritäten basierend auf den tatsächlichen Daten. Kein Text außerhalb des JSON.`;
+{"executive_summary":"","current_score":{"overall":0,"label":"gut"},"priorities":[{"rank":1,"category":"traffic","title":"","problem":"","action":"","impact":"","timeline":"","effort":"low","kpis":[""]},{"rank":2,"category":"content","title":"","problem":"","action":"","impact":"","timeline":"","effort":"medium","kpis":[""]},{"rank":3,"category":"technical","title":"","problem":"","action":"","impact":"","timeline":"","effort":"high","kpis":[""]}],"forecast_90_days":"","quick_wins":["","",""]}
+
+Fülle alle Felder mit echten Daten. label ist "gut", "ausbaufähig" oder "kritisch". effort ist "low", "medium" oder "high". Kein Text außerhalb des JSON.`;
 
     try {
       abortRef.current = new AbortController();
       const res = await fetch("/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], max_tokens: 2000 }),
-        signal: AbortSignal.timeout(60000),
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], max_tokens: 3500 }),
+        signal: AbortSignal.timeout(90000),
       });
-      if (!res.ok) throw new Error(`AI request failed: ${res.status}`);
+      if (!res.ok) throw new Error(`KI-Anfrage fehlgeschlagen (${res.status})`);
       const d = await res.json();
       const text = d.content?.[0]?.text ?? d.choices?.[0]?.message?.content ?? "";
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Kein JSON in der Antwort gefunden");
-      const parsed = JSON.parse(jsonMatch[0]);
+      if (!jsonMatch) throw new Error("Die KI hat kein strukturiertes JSON zurückgegeben. Bitte erneut versuchen.");
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonMatch[0]);
+      } catch {
+        // Try to salvage truncated JSON by closing open structures
+        let partial = jsonMatch[0].trimEnd();
+        // close open arrays/objects greedily
+        let depth = 0;
+        for (const ch of partial) { if (ch === "{" || ch === "[") depth++; else if (ch === "}" || ch === "]") depth--; }
+        if (depth > 0) {
+          // strip trailing comma/incomplete value then close
+          partial = partial.replace(/,\s*$/, "");
+          for (let i = 0; i < depth; i++) partial += (partial.includes("[") && !partial.endsWith("]") ? "]" : "}");
+          try { parsed = JSON.parse(partial); } catch {}
+        }
+        if (!parsed) throw new Error("Der Strategieplan konnte nicht vollständig geladen werden. Bitte erneut generieren.");
+      }
+      stopProgress();
       setPlan(parsed);
       try { localStorage.setItem(storageKey, JSON.stringify(parsed)); } catch {}
     } catch (err) {
-      if (err.name !== "AbortError") setError(err.message || "Fehler beim Generieren");
+      stopProgress();
+      if (err.name !== "AbortError") setError(err.message || "Fehler beim Generieren – bitte erneut versuchen.");
     } finally {
       setLoading(false);
     }
-  }, [client, reports, contentReports, schemaReports, socialReports, storageKey]);
+  }, [client, reports, contentReports, schemaReports, socialReports, storageKey, startProgress, stopProgress]);
 
   const scoreColor = plan?.current_score?.label === "gut"
     ? "#059669"
@@ -508,17 +546,68 @@ Erstelle 3-5 Prioritäten basierend auf den tatsächlichen Daten. Kein Text auß
             </div>
           )}
 
-          {/* Loading skeleton */}
-          {loading && !plan && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {[1, 2, 3].map(i => (
-                <div key={i} style={{
-                  height: i === 1 ? 80 : 100, borderRadius: T.rMd,
-                  background: `linear-gradient(90deg, ${C.bg} 25%, ${C.border} 50%, ${C.bg} 75%)`,
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer 1.4s infinite",
-                }} />
-              ))}
+          {/* Progress bar while loading */}
+          {loading && (
+            <div style={{
+              padding: "36px 24px 40px",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
+            }}>
+              {/* Animated icon */}
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: "#7c3aed15", border: "2px solid #7c3aed30",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Sparkles size={22} color="#7c3aed" strokeWidth={IW}
+                  style={{ animation: "spin 2s linear infinite" }} />
+              </div>
+
+              {/* Step label */}
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#7c3aed", minHeight: 20, textAlign: "center" }}>
+                {progLabel}
+              </div>
+
+              {/* Progress track */}
+              <div style={{ width: "100%", maxWidth: 420 }}>
+                <div style={{
+                  height: 8, borderRadius: 99, background: C.border, overflow: "hidden",
+                  position: "relative",
+                }}>
+                  <div style={{
+                    height: "100%", borderRadius: 99,
+                    background: "linear-gradient(90deg, #7c3aed, #a78bfa)",
+                    width: `${progress}%`,
+                    transition: "width 0.7s ease-in-out",
+                  }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+                  <span style={{ fontSize: 10, color: C.textMute }}>KI analysiert…</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed" }}>{progress}%</span>
+                </div>
+              </div>
+
+              {/* Step indicators */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+                {PROGRESS_STEPS.map((step, i) => {
+                  const done = progress >= step.pct;
+                  return (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      padding: "3px 10px", borderRadius: 99, fontSize: 10, fontWeight: 600,
+                      background: done ? "#7c3aed15" : C.bg,
+                      border: `1px solid ${done ? "#7c3aed40" : C.border}`,
+                      color: done ? "#7c3aed" : C.textMute,
+                      transition: "all 0.4s",
+                    }}>
+                      {done
+                        ? <CheckCircle size={9} strokeWidth={IW} />
+                        : <div style={{ width: 9, height: 9, borderRadius: "50%", border: `1.5px solid ${C.border}` }} />
+                      }
+                      {step.label.replace("…", "")}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -687,7 +776,7 @@ Erstelle 3-5 Prioritäten basierend auf den tatsächlichen Daten. Kein Text auß
           )}
 
           {/* Empty state (no plan yet) */}
-          {!plan && !loading && !error && (
+          {!plan && !loading && !error && availableTypes.length >= 2 && (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <Sparkles size={36} color="#7c3aed" strokeWidth={IW} style={{ margin: "0 auto 14px" }} />
               <div style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 8 }}>
