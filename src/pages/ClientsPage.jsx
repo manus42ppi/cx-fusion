@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, Minus, ChevronRight, X,
   BookText, Clock, History, ChevronDown, ChevronUp,
   ExternalLink, BarChart2, Code2, AlertTriangle,
-  CheckCircle, RefreshCw,
+  CheckCircle, RefreshCw, Share2,
 } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
@@ -74,6 +74,30 @@ const REPORT_TYPES = [
       const ok = e?.summary?.validCount;
       if (sc == null) return null;
       return `${sc} Schema${sc !== 1 ? "s" : ""}${ok != null ? ` · ${ok} valide` : ""}`;
+    },
+  },
+  {
+    id:      "social",
+    label:   "Social Intelligence",
+    icon:    Share2,
+    color:   "#0ea5e9",
+    navTo:   "social-media-stats",
+    metric:  r => {
+      const score  = r?.score;
+      const active = Object.values(r?.profiles || {}).filter(p => p?.url).length;
+      if (score == null && !active) return null;
+      return { value: score != null ? `${score}` : `${active}`, sub: score != null ? "Social Score" : "Plattformen" };
+    },
+    summaryLine: e => {
+      const score  = e?.summary?.score;
+      const active = e?.summary?.activeCount;
+      const plat   = e?.summary?.primaryPlatform;
+      if (score == null && active == null) return null;
+      const parts = [];
+      if (score != null) parts.push(`Score ${score}/100`);
+      if (active != null) parts.push(`${active} Plattformen`);
+      if (plat) parts.push(plat);
+      return parts.join(" · ");
     },
   },
 ];
@@ -246,7 +270,7 @@ const HistoryPanel = memo(function HistoryPanel({ domain, onOpen }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ClientsPage() {
-  const { clients, addClient, removeClient, reports, contentReports, schemaReports, setActiveReport, goNav } = useApp();
+  const { clients, addClient, removeClient, reports, contentReports, schemaReports, socialReports, setActiveReport, goNav } = useApp();
   const [showForm, setShowForm]         = useState(false);
   const [form, setForm]                 = useState({ name: "", domain: "" });
   const [formErr, setFormErr]           = useState("");
@@ -258,6 +282,7 @@ export default function ClientsPage() {
     if (typeId === "website") return reports[domain];
     if (typeId === "content") return contentReports?.[domain];
     if (typeId === "schema")  return schemaReports?.[domain];
+    if (typeId === "social")  return socialReports?.[domain];
     return null;
   }
 
@@ -306,8 +331,10 @@ export default function ClientsPage() {
       goNav("content", { domain: client.domain, report });
     } else if (typeId === "schema") {
       goNav("feat-schema-validator");
+    } else if (typeId === "social") {
+      goNav("social-media-stats");
     }
-  }, [reports, contentReports, schemaReports, setActiveReport, goNav]);
+  }, [reports, contentReports, schemaReports, socialReports, setActiveReport, goNav]);
 
   const handleDelete = useCallback((id) => {
     if (deleteConfirm === id) {
@@ -326,7 +353,7 @@ export default function ClientsPage() {
     return clients.reduce((sum, c) => {
       return sum + REPORT_TYPES.filter(t => !!getReport(c.domain, t.id)).length;
     }, 0);
-  }, [clients, reports, contentReports, schemaReports]);
+  }, [clients, reports, contentReports, schemaReports, socialReports]);
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px 60px" }}>

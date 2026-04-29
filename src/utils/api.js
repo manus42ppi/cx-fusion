@@ -192,6 +192,36 @@ export function saveSchemaReport(domain, data) {
 }
 
 // ---------------------------------------------------------------------------
+// Social Intelligence reports
+// ---------------------------------------------------------------------------
+
+const SOCIAL_REPORTS_KEY = "cxf_social_reports";
+
+export function loadSocialReportsSync() {
+  try { return JSON.parse(localStorage.getItem(SOCIAL_REPORTS_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+export async function loadSocialReports() {
+  const kv = await kvGet(SOCIAL_REPORTS_KEY);
+  if (kv !== null) {
+    try { localStorage.setItem(SOCIAL_REPORTS_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadSocialReportsSync();
+}
+
+export function saveSocialReport(domain, data) {
+  const all = loadSocialReportsSync();
+  const savedAt = new Date().toISOString();
+  all[domain] = { ...data, savedAt };
+  localStorage.setItem(SOCIAL_REPORTS_KEY, JSON.stringify(all));
+  kvSet(SOCIAL_REPORTS_KEY, all);
+  _addToHistory(domain, "social", savedAt, data);
+  _pushToFullHistory(domain, "social", savedAt, data);
+}
+
+// ---------------------------------------------------------------------------
 // Full report history – up to 5 complete reports per domain
 // ---------------------------------------------------------------------------
 
@@ -232,6 +262,11 @@ function _pushToFullHistory(domain, type, savedAt, data) {
     const errCount   = data?.pages?.filter(p => p.status === "error").length ?? 0;
     const schemaCount = data?.pages?.reduce((s, p) => s + (p.schemas?.length ?? 0), 0) ?? 0;
     summary = { schemaCount, validCount, warnCount, errCount, overallScore: data?.overallScore };
+  } else if (type === "social") {
+    const activeCount = Object.values(data?.profiles || {}).filter(p => p?.url).length;
+    const primaryPlatform = data?.primary_platform ?? null;
+    const topFollowers = Math.max(...Object.values(data?.metrics || {}).map(m => m?.followers ?? 0), 0) || null;
+    summary = { score: data?.score, activeCount, primaryPlatform, topFollowers };
   } else {
     summary = {};
   }
@@ -268,6 +303,9 @@ function _addToHistory(domain, type, savedAt, data) {
     summary = { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
   } else if (type === "schema") {
     summary = { schemaCount: data?.pages?.reduce((s, p) => s + (p.schemas?.length ?? 0), 0) ?? 0, overallScore: data?.overallScore };
+  } else if (type === "social") {
+    const activeCount = Object.values(data?.profiles || {}).filter(p => p?.url).length;
+    summary = { score: data?.score, activeCount, primaryPlatform: data?.primary_platform };
   } else {
     summary = {};
   }

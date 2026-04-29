@@ -5,6 +5,7 @@ import {
   loadReportsSync, loadReports,
   loadContentReportsSync, loadContentReports,
   loadSchemaReportsSync, loadSchemaReports,
+  loadSocialReportsSync, loadSocialReports,
   loadClientHistorySync, loadClientHistory,
   saveReport, saveContentReport,
   uid,
@@ -57,6 +58,7 @@ export function AppProvider({ children }) {
   const [reports, setReports]               = useState(() => loadReportsSync());
   const [contentReports, setContentReports] = useState(() => loadContentReportsSync());
   const [schemaReports,  setSchemaReports]  = useState(() => loadSchemaReportsSync());
+  const [socialReports,  setSocialReports]  = useState(() => loadSocialReportsSync());
   const [clientHistory, setClientHistory]   = useState(() => loadClientHistorySync());
 
   const [activeReport,    setActiveReport]    = useState(null);
@@ -69,6 +71,7 @@ export function AppProvider({ children }) {
     loadReports().then(data => setReports(data));
     loadContentReports().then(data => setContentReports(data));
     loadSchemaReports().then(data => setSchemaReports(data));
+    loadSocialReports().then(data => setSocialReports(data));
     loadClientHistory().then(data => setClientHistory(data));
   }, []);
 
@@ -128,6 +131,7 @@ export function AppProvider({ children }) {
     reports, persistReport,
     contentReports, persistContentReport,
     schemaReports,
+    socialReports,
     clientHistory,
   }), [
     isLoaded, user, demoUser, handleLogout,
@@ -139,6 +143,7 @@ export function AppProvider({ children }) {
     reports, persistReport,
     contentReports, persistContentReport,
     schemaReports,
+    socialReports,
     clientHistory,
   ]);
 
