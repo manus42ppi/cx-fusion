@@ -25,16 +25,16 @@ export async function onRequestPost(ctx) {
   try {
     const body = await ctx.request.json().catch(() => ({}));
     const context = body.context || "CX Fusion Web Intelligence Platform";
-    const apiKey = ctx.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY nicht konfiguriert");
+    // Use /ai proxy (same-origin) — never call api.anthropic.com directly
+    const origin = new URL(ctx.request.url).origin;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 55000);
+
+    const res = await fetch(`${origin}/ai`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
+      headers: { "Content-Type": "application/json" },
+      signal: ctrl.signal,
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 2000,
@@ -50,6 +50,7 @@ Erstelle 2-4 patterns und 3-5 suggestions für eine Web-Analyse-Plattform. Keine
         }],
       }),
     });
+    clearTimeout(timer);
 
     const apiData = await res.json();
     const text = apiData?.content?.[0]?.text || "";

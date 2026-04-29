@@ -101,6 +101,69 @@
       "desc": "Schema.org-Validierung & Rich-Snippet-Vorschau",
       "page": "feat_feat-schema-validator.jsx",
       "addedAt": "2026-04-27T05:46:40.712Z"
+    },
+    {
+      "id": "feat-redirect-chain-analyzer",
+      "name": "Redirect-Analyse",
+      "desc": "301/302-Ketten erkennen & visualisieren",
+      "page": "feat_feat-redirect-chain-analyzer.jsx",
+      "addedAt": "2026-04-28T18:24:54.093Z"
+    },
+    {
+      "id": "feature-competitor-keyword-gap",
+      "name": "Keyword-Gap",
+      "desc": "Keywords finden, die Konkurrenten ranken — du nicht",
+      "page": "feat_feature-competitor-keyword-gap.jsx",
+      "addedAt": "2026-04-28T21:24:32.843Z"
+    },
+    {
+      "id": "feat-keyword-research",
+      "name": "Keyword-Recherche",
+      "desc": "Suchvolumen, Difficulty & Trends für jedes Keyword",
+      "page": "feat_feat-keyword-research.jsx",
+      "addedAt": "2026-04-29T02:09:37.641Z"
+    },
+    {
+      "id": "feat-rank-tracking",
+      "name": "Rank Tracker",
+      "desc": "SERP-Positionen über Zeit verfolgen",
+      "page": "feat_feat-rank-tracking.jsx",
+      "addedAt": "2026-04-29T02:24:40.818Z"
+    },
+    {
+      "id": "feat-historical-trends",
+      "name": "Trends",
+      "desc": "Traffic & SEO-Verlauf über Zeit verfolgen",
+      "page": "feat_feat-historical-trends.jsx",
+      "addedAt": "2026-04-29T02:39:48.838Z"
+    },
+    {
+      "id": "email-lead-gen",
+      "name": "Lead-Finder",
+      "desc": "Kontakte & Social-Profile aus Websites extrahieren",
+      "page": "feat_email-lead-gen.jsx",
+      "addedAt": "2026-04-29T02:54:31.487Z"
+    },
+    {
+      "id": "content-gap-analysis",
+      "name": "Content-Gap",
+      "desc": "Keywords & Themen finden, die Konkurrenten ranken — du nicht",
+      "page": "feat_content-gap-analysis.jsx",
+      "addedAt": "2026-04-29T03:39:33.809Z"
+    },
+    {
+      "id": "api-access",
+      "name": "API",
+      "desc": "REST-API für Entwickler & Agenturen",
+      "page": "feat_api-access.jsx",
+      "addedAt": "2026-04-29T03:54:29.935Z"
+    },
+    {
+      "id": "social-media-stats",
+      "name": "Social Intelligence",
+      "desc": "Social-Media-Präsenz & Engagement analysieren",
+      "page": "feat_social-media-stats.jsx",
+      "addedAt": "2026-04-29T04:24:24.332Z"
     }
   ],
   "competitors": [

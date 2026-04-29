@@ -27,31 +27,31 @@ const FALLBACK = {
 
 export async function onRequestPost(ctx) {
   try {
-    const apiKey = ctx.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY nicht konfiguriert");
+    // Use /ai proxy (same-origin) — never call api.anthropic.com directly
+    const origin = new URL(ctx.request.url).origin;
 
     const knownFeatures = [
-      "Website-Analyse (PSI, PageRank, WHOIS, Tech-Stack)",
+      "Website-Analyse (PSI, PageRank, WHOIS, Tech-Stack, Homepage-Content-Fetch)",
       "Content-Audit (RSS, Tonalität, Sentiment, Themen-Cluster)",
       "Website-Vergleich (2 Domains side-by-side)",
       "Batch-Analyse (bis zu 50 Domains)",
-      "Structured Data Validator (Schema.org)",
-      "Broken-Link-Checker",
-      "SEO-Audit (Flesch-Kincaid, Meta-Tags, Canonical)",
-      "SERP-Vorschau (Google-Snippets)",
-      "Kundenverwaltung mit Report-Historie",
+      "Structured Data / Structure-Audit (Schema.org, JSON-LD)",
+      "Social Intelligence (Social-Media-Profile & Engagement)",
+      "Kundenverwaltung mit Report-Historie (5 Reports pro Domain)",
       "KI-Bug-Analyse & Verbesserungsvorschläge",
       "Traffic-Schätzung & Geo-Daten",
       "Domain-Historie & Archiv-Trends",
+      "Zielgruppen-Analyse aus echtem Homepage-Inhalt",
+      "Autonome Verbesserung (Markt-Scan + Feature-Generierung)",
     ];
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 55000);
+
+    const res = await fetch(`${origin}/ai`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
+      headers: { "Content-Type": "application/json" },
+      signal: ctrl.signal,
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 3000,
@@ -69,6 +69,7 @@ Erstelle 6-8 topGaps und 2-3 quickWins mit echten Inhalten.`,
         }],
       }),
     });
+    clearTimeout(timer);
 
     const apiData = await res.json();
     const text = apiData?.content?.[0]?.text || "";

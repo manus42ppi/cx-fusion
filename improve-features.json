@@ -1,9 +1,147 @@
 {
-  "generatedAt": 1777301427739,
+  "generatedAt": 1777436596926,
   "autoRun": true,
   "codegenPending": false,
-  "marketTrends": [],
-  "topGaps": [],
-  "quickWins": [],
-  "nextFeature": null
+  "marketTrends": [
+    "KI-gestützte Wettbewerbsanalyse wird zum Standard – Agenturen erwarten automatisierte Insights ohne manuelle Recherche",
+    "Zero-Click-SERPs und Featured Snippets erhöhen den Bedarf an Structured-Data- und SERP-Feature-Optimierung",
+    "Privacy-First-Analytics treibt Nachfrage nach KI-basierten Traffic-Schätzungen als Alternative zu Cookies",
+    "Browser-Extensions gewinnen als Low-Friction-Einstiegspunkt für SaaS-Tools massiv an Bedeutung",
+    "Social Signals werden zunehmend als Rankingfaktor-Proxy und Brand-Health-Indikator genutzt",
+    "Backlink-Qualität schlägt Quantität – detaillierte Link-Profile sind unverzichtbar für Enterprise-SEO",
+    "Historische Daten (12+ Monate) werden Pflicht für datengetriebene Content-Strategien",
+    "Lead-Generierung via Tech-Stack-Targeting wächst als B2B-Sales-Channel stark"
+  ],
+  "topGaps": [
+    {
+      "id": "backlink-profile",
+      "name": "Echtes Backlink-Profil",
+      "why": "KI-Schätzungen reichen für Agenturen und SEO-Experten nicht aus – sie benötigen echte Link-Daten für Audits, Pitches und Linkbuilding-Kampagnen. Ohne echte Backlink-Daten verliert cx-fusion gegen Ahrefs/SEMrush bei jedem Enterprise-Deal.",
+      "competitorHas": [
+        "Ahrefs",
+        "SEMrush",
+        "Moz",
+        "Ubersuggest"
+      ],
+      "impact": "high",
+      "effort": "high",
+      "priority": 1
+    },
+    {
+      "id": "social-media-stats",
+      "name": "Social-Media-Statistiken",
+      "why": "Marketing-Agenturen und Content-Manager brauchen Social-Präsenz-Daten (Follower, Engagement, Posting-Frequenz) als Teil der Wettbewerbsanalyse. Aktuell fehlt dieser Kanal komplett, obwohl er direkt in bestehende Domain-Analysen integrierbar wäre.",
+      "competitorHas": [
+        "SimilarWeb",
+        "SEMrush"
+      ],
+      "impact": "high",
+      "effort": "medium",
+      "priority": 2
+    },
+    {
+      "id": "browser-extension",
+      "name": "Browser-Extension (1-Klick-Analyse)",
+      "why": "Niedrigste Einstiegshürde für Viral Growth und tägliche aktive Nutzung. Wettbewerber wie SimilarWeb und Wappalyzer gewinnen massiv über Extensions neue Nutzer. Jede besuchte Website wird zum Akquisitionskanal.",
+      "competitorHas": [
+        "SimilarWeb",
+        "Wappalyzer",
+        "SEMrush",
+        "Ahrefs"
+      ],
+      "impact": "high",
+      "effort": "medium",
+      "priority": 3
+    },
+    {
+      "id": "historical-trends",
+      "name": "Historische Trend-Daten (12+ Monate)",
+      "why": "Agenturen müssen Kunden langfristige Entwicklungen zeigen – monatliche Snapshots reichen nicht. Ohne 12-Monats-Verlauf für Traffic und Rankings fehlt die Basis für Strategie-Reportings und ROI-Nachweise.",
+      "competitorHas": [
+        "SimilarWeb",
+        "SEMrush",
+        "Ahrefs",
+        "SpyFu"
+      ],
+      "impact": "high",
+      "effort": "high",
+      "priority": 4
+    },
+    {
+      "id": "ppc-analysis",
+      "name": "PPC- & Paid-Search-Analyse",
+      "why": "Marketing-Agenturen mit Performance-Marketing-Fokus fehlt ein komplettes Wettbewerbsbild ohne PPC-Daten. Google Ads-Spend-Schätzungen, Top-Anzeigen und Ad-Keywords sind bei SpyFu und SEMrush Kernfeatures mit hoher Zahlungsbereitschaft.",
+      "competitorHas": [
+        "SEMrush",
+        "SpyFu",
+        "SimilarWeb"
+      ],
+      "impact": "medium",
+      "effort": "high",
+      "priority": 5
+    },
+    {
+      "id": "domain-authority-score",
+      "name": "Eigener Authority-Score (cx-Score)",
+      "why": "Moz DA und Ahrefs DR sind Industrie-Standard-Metriken. Ein eigener, klar kommunizierter Authority-Score stärkt die Marken-Identität von cx-fusion und gibt Nutzern eine vertraute, vergleichbare Kennzahl ohne Drittanbieter-Abhängigkeit.",
+      "competitorHas": [
+        "Moz",
+        "Ahrefs",
+        "SEMrush"
+      ],
+      "impact": "medium",
+      "effort": "medium",
+      "priority": 6
+    }
+  ],
+  "quickWins": [
+    {
+      "id": "social-media-widget",
+      "name": "Social-Media-Schnellübersicht in Domain-Analyse",
+      "description": "Automatische Erkennung und Verlinkung von Social-Profilen (LinkedIn, X, Instagram, Facebook, YouTube) einer Domain inkl. öffentlicher Follower-Zahlen via oEmbed/public APIs. Als neues Tab oder Card in der bestehenden Domain-Vollanalyse integrierbar – kein neues Backend nötig.",
+      "uiHint": "Neue 'Social'-Card in der Domain-Analyse mit Platform-Icons, Follower-Count-Badges und Engagement-Rate-Pill. Farbkodiert nach Plattform. Direkt unterhalb der Traffic-Karte platzieren."
+    },
+    {
+      "id": "whois-expiry-alert",
+      "name": "Domain-Ablauf-Monitor & Alert",
+      "description": "Bei gespeicherten Kunden-Domains automatisch WHOIS-Ablaufdatum im Dashboard anzeigen und bei <60 Tagen ein rotes Alert-Badge setzen. Daten sind bereits via WHOIS-Analyse vorhanden – nur UI-Layer und Logik fehlt.",
+      "uiHint": "In der Kundenverwaltung neben jedem Domain-Eintrag ein Ablauf-Badge: grün (>90d), gelb (30-90d), rot (<30d). Tooltip zeigt exaktes Ablaufdatum. Optional: E-Mail-Benachrichtigung als Toggle."
+    },
+    {
+      "id": "competitor-snapshot",
+      "name": "Auto-Competitor-Erkennung & Schnellvergleich",
+      "description": "Auf Basis von analysierten Keywords und Nische automatisch 3-5 Hauptwettbewerber einer Domain vorschlagen und einen 1-Klick-Vergleich anbieten. Nutzt vorhandene KI-Keyword-Daten und den bestehenden Domain-Vergleich.",
+      "uiHint": "Nach jeder Domain-Analyse: 'Erkannte Wettbewerber'-Section mit Avatar-Cards (Favicon + Domain + SEO-Score). CTA-Button 'Jetzt vergleichen' öffnet direkt den Domain-Vergleich mit vorausgefüllten Feldern."
+    },
+    {
+      "id": "seo-score-embed-badge",
+      "name": "Teilbarer SEO-Score-Badge",
+      "description": "Agenturen können einen dynamisch generierten SVG/PNG-Badge mit dem cx-fusion SEO-Score ihrer Kunden-Domain generieren und in Reports oder Websites einbetten. Viral-Marketing-Effekt + Markenbekanntheit.",
+      "uiHint": "Im SEO-Audit-Tab ein 'Badge teilen'-Button. Modal mit Vorschau des Badges (Score-Ring + cx-fusion-Logo + Domain), Copy-Button für Embed-Code (<img src='...'>) und direkter Download als PNG."
+    },
+    {
+      "id": "bulk-serp-export",
+      "name": "Batch-SERP-Vorschau-Export",
+      "description": "Alle SERP-Vorschauen einer Domain (Title, Description, URL) in einer einzigen CSV/Google-Sheets-kompatiblen Tabelle exportieren. Für Content-Manager bei großen Sites extrem wertvoll – UI dafür fehlt, Daten sind vorhanden.",
+      "uiHint": "Im SERP-Vorschau-Tab ein 'Alle exportieren'-Button oben rechts. Export enthält: URL, Title-Tag, Meta-Description, Zeichenzähler-Status (OK/Zu lang/Zu kurz) als farbige Spalte."
+    }
+  ],
+  "nextFeature": {
+    "id": "social-media-stats",
+    "name": "Social Media Intelligence",
+    "description": "Vollständige Social-Media-Analyse für jede untersuchte Domain: Automatische Erkennung aller Social-Profile (LinkedIn, X/Twitter, Instagram, Facebook, YouTube, TikTok) via HTML-Parsing und Link-Extraktion. Anzeige von Follower-Zahlen, Posting-Frequenz, Engagement-Rate und letztem Post-Datum über öffentliche APIs und oEmbed-Endpunkte. Vergleich der Social-Präsenz zwischen Wettbewerbern. Komplett in die bestehende Domain-Vollanalyse als neues Tab integriert – kein Breaking Change, geringer Infrastrukturaufwand, sofort sichtbarer Mehrwert für Marketing-Agenturen.",
+    "targetPage": "/analyze",
+    "components": [
+      "SocialProfileDetector – HTML-Parser für og:see_also, rel=me, Footer-Links zur Profilerkennung",
+      "SocialMetricsCard – Platform-spezifische Card mit Icon, Follower-Count, Engagement-Rate-Pill und letztem Post-Datum",
+      "SocialPresenceScoreRing – Gewichteter Score 0-100 basierend auf Anzahl aktiver Plattformen und Engagement",
+      "SocialComparisonBar – Horizontale Balkendiagramme für Follower-Vergleich zwischen zwei Domains",
+      "SocialPlatformGrid – Responsive Grid aller erkannten Plattformen mit Status-Badges (Aktiv/Inaktiv/Nicht vorhanden)",
+      "SocialInsightsBanner – KI-generierte Handlungsempfehlungen basierend auf Social-Präsenz-Lücken"
+    ],
+    "navLabel": "Social Intelligence",
+    "navDesc": "Social-Media-Präsenz & Engagement analysieren",
+    "navIcon": "Star"
+  },
+  "codegenDoneAt": 1777436664336
 }
