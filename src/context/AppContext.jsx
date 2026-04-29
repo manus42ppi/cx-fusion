@@ -4,6 +4,7 @@ import {
   loadClientsSync, loadClients, saveClients,
   loadReportsSync, loadReports,
   loadContentReportsSync, loadContentReports,
+  loadSchemaReportsSync, loadSchemaReports,
   loadClientHistorySync, loadClientHistory,
   saveReport, saveContentReport,
   uid,
@@ -55,6 +56,7 @@ export function AppProvider({ children }) {
   const [clients, setClients]               = useState(() => loadClientsSync());
   const [reports, setReports]               = useState(() => loadReportsSync());
   const [contentReports, setContentReports] = useState(() => loadContentReportsSync());
+  const [schemaReports,  setSchemaReports]  = useState(() => loadSchemaReportsSync());
   const [clientHistory, setClientHistory]   = useState(() => loadClientHistorySync());
 
   const [activeReport,    setActiveReport]    = useState(null);
@@ -66,6 +68,7 @@ export function AppProvider({ children }) {
     loadClients().then(data => setClients(data));
     loadReports().then(data => setReports(data));
     loadContentReports().then(data => setContentReports(data));
+    loadSchemaReports().then(data => setSchemaReports(data));
     loadClientHistory().then(data => setClientHistory(data));
   }, []);
 
@@ -124,6 +127,7 @@ export function AppProvider({ children }) {
     pendingDomain, setPendingDomain,
     reports, persistReport,
     contentReports, persistContentReport,
+    schemaReports,
     clientHistory,
   }), [
     isLoaded, user, demoUser, handleLogout,
@@ -134,6 +138,7 @@ export function AppProvider({ children }) {
     pendingDomain, setPendingDomain,
     reports, persistReport,
     contentReports, persistContentReport,
+    schemaReports,
     clientHistory,
   ]);
 

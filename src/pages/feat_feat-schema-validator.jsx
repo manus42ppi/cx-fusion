@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
 import AnalysisProgress from "../components/ui/AnalysisProgress.jsx";
+import { saveSchemaReport } from "../utils/api.js";
 import {
   CheckCircle, AlertTriangle, XCircle, Code2, Shield,
   ChevronDown, ChevronUp, Zap, Globe, Search,
@@ -168,6 +169,8 @@ export default function FeatSchemaValidatorPage() {
     try {
       const data = await callValidate(d);
       setResult(data);
+      // Auto-save under the domain so it appears in ClientsPage
+      try { saveSchemaReport(d, data); } catch {}
     } catch (e) {
       setError(e.message || "Analyse fehlgeschlagen");
     }

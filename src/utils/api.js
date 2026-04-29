@@ -162,6 +162,36 @@ export function saveContentReport(domain, data) {
 }
 
 // ---------------------------------------------------------------------------
+// Structure-Audit (schema-validate) reports
+// ---------------------------------------------------------------------------
+
+const SCHEMA_REPORTS_KEY = "cxf_schema_reports";
+
+export function loadSchemaReportsSync() {
+  try { return JSON.parse(localStorage.getItem(SCHEMA_REPORTS_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+export async function loadSchemaReports() {
+  const kv = await kvGet(SCHEMA_REPORTS_KEY);
+  if (kv !== null) {
+    try { localStorage.setItem(SCHEMA_REPORTS_KEY, JSON.stringify(kv)); } catch {}
+    return kv;
+  }
+  return loadSchemaReportsSync();
+}
+
+export function saveSchemaReport(domain, data) {
+  const all = loadSchemaReportsSync();
+  const savedAt = new Date().toISOString();
+  all[domain] = { ...data, savedAt };
+  localStorage.setItem(SCHEMA_REPORTS_KEY, JSON.stringify(all));
+  kvSet(SCHEMA_REPORTS_KEY, all);
+  _addToHistory(domain, "schema", savedAt, data);
+  _pushToFullHistory(domain, "schema", savedAt, data);
+}
+
+// ---------------------------------------------------------------------------
 // Full report history – up to 5 complete reports per domain
 // ---------------------------------------------------------------------------
 
@@ -190,9 +220,21 @@ export async function loadFullHistory(domain) {
 function _pushToFullHistory(domain, type, savedAt, data) {
   const key      = _fullHistKey(domain);
   const existing = loadFullHistorySync(domain);
-  const summary  = type === "website"
-    ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal, category: data?.ai?.category }
-    : { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
+
+  let summary;
+  if (type === "website") {
+    summary = { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal, category: data?.ai?.category };
+  } else if (type === "content") {
+    summary = { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
+  } else if (type === "schema") {
+    const validCount = data?.pages?.filter(p => p.status === "valid").length ?? 0;
+    const warnCount  = data?.pages?.filter(p => p.status === "warning").length ?? 0;
+    const errCount   = data?.pages?.filter(p => p.status === "error").length ?? 0;
+    const schemaCount = data?.pages?.reduce((s, p) => s + (p.schemas?.length ?? 0), 0) ?? 0;
+    summary = { schemaCount, validCount, warnCount, errCount, overallScore: data?.overallScore };
+  } else {
+    summary = {};
+  }
 
   const entry = { id: uid(), type, savedAt, summary, data };
   const next  = [entry, ...existing].slice(0, FULLHIST_MAX);
@@ -219,9 +261,16 @@ export async function loadClientHistory() {
 function _addToHistory(domain, type, savedAt, data) {
   const all      = loadClientHistorySync();
   const existing = all[domain] || [];
-  const summary  = type === "website"
-    ? { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal }
-    : { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
+  let summary;
+  if (type === "website") {
+    summary = { traffic: data?.ai?.trafficEstimate?.monthly, score: data?.pagespeed?.score ?? data?.psi?.score, trendSignal: data?.ai?.trendSignal };
+  } else if (type === "content") {
+    summary = { articles: data?.articles?.length, tone: data?.ai?.overallTone, sentiment: data?.ai?.sentimentLabel };
+  } else if (type === "schema") {
+    summary = { schemaCount: data?.pages?.reduce((s, p) => s + (p.schemas?.length ?? 0), 0) ?? 0, overallScore: data?.overallScore };
+  } else {
+    summary = {};
+  }
   all[domain] = [{ id: uid(), type, savedAt, summary }, ...existing].slice(0, FULLHIST_MAX);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
   kvSet(HISTORY_KEY, all);
