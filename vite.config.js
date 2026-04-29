@@ -66,7 +66,8 @@ export default defineConfig({
       "/improve-apply": "http://localhost:8788",
       "/broken-links": "http://localhost:8788",
       "/features-manifest": "http://localhost:8788",
-      "/schema-validate": "http://localhost:8788",
+      "/schema-validate":  "http://localhost:8788",
+      "/social-analyze":  "http://localhost:8788",
     },
   },
 });
