@@ -1,12 +1,35 @@
 import React, { useState, useEffect, useRef, memo, useMemo } from "react";
 import {
   Bot, RefreshCw, AlertTriangle, CheckCircle, Zap,
-  ChevronDown, ChevronUp, BarChart2, Lightbulb, Clock,
-  History, TrendingUp, Package, ArrowRight, FileCode,
-  Rocket, Target, Globe,
+  ChevronDown, ChevronUp, BarChart2, Clock,
+  History, TrendingUp, Package, FileCode,
+  Rocket, Target, Globe, Archive,
 } from "lucide-react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
-import { Card, Btn, Badge } from "../components/ui/index.jsx";
+import { Card, Btn } from "../components/ui/index.jsx";
+
+// ─── localStorage helpers ─────────────────────────────────────────────────────
+
+const LS_FEAT_CURRENT  = "cxf_feat_current";
+const LS_FEAT_HISTORY  = "cxf_feat_history";
+const LS_BUG_CURRENT   = "cxf_bug_current";
+const LS_BUG_HISTORY   = "cxf_bug_history";
+const MAX_HISTORY      = 5;
+
+function lsGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+function saveResult(currentKey, historyKey, data) {
+  lsSet(currentKey, data);
+  const history = lsGet(historyKey) || [];
+  // Avoid exact duplicate (same generatedAt)
+  const filtered = history.filter(h => h.generatedAt !== data.generatedAt);
+  lsSet(historyKey, [data, ...filtered].slice(0, MAX_HISTORY));
+}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -42,6 +65,11 @@ function fmtCountdown(ms) {
   if (h > 0) return `${h}h ${m}m`;
   if (m > 0) return `${m}m ${s}s`;
   return `${s}s`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return "–";
+  return new Date(iso).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function CodeBlock({ code }) {
@@ -139,84 +167,125 @@ const FeatureGapCard = memo(function FeatureGapCard({ gap, idx }) {
   );
 });
 
+// ─── History Panel ────────────────────────────────────────────────────────────
+
+function HistoryPanel({ history, onRestore, label }) {
+  const [open, setOpen] = useState(false);
+  if (!history?.length) return null;
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: "flex", alignItems: "center", gap: 7, width: "100%",
+          padding: "8px 14px", borderRadius: T.rMd,
+          background: C.surface, border: `1px solid ${C.border}`,
+          cursor: "pointer", fontFamily: FONT, fontSize: 12, color: C.textMid, fontWeight: 600,
+        }}
+      >
+        <Archive size={13} strokeWidth={IW} color={C.textSoft} />
+        Archiv – letzte {history.length} {label}
+        <div style={{ marginLeft: "auto" }}>
+          {open ? <ChevronUp size={13} strokeWidth={IW} color={C.textSoft} /> : <ChevronDown size={13} strokeWidth={IW} color={C.textSoft} />}
+        </div>
+      </button>
+      {open && (
+        <div style={{ marginTop: 4, borderRadius: T.rMd, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+          {history.map((item, i) => (
+            <button
+              key={i}
+              onClick={() => onRestore(item)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "10px 14px", background: i % 2 === 0 ? C.surface : C.bg,
+                border: "none", borderTop: i > 0 ? `1px solid ${C.border}` : "none",
+                cursor: "pointer", fontFamily: FONT, textAlign: "left",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = C.accentLight}
+              onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.surface : C.bg}
+            >
+              <div style={{ width: 28, height: 28, borderRadius: T.rSm, background: C.accentLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: C.accent }}>#{i + 1}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{fmtDate(item.generatedAt)}</div>
+                {item.summary && <div style={{ fontSize: 11, color: C.textSoft, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.summary}</div>}
+              </div>
+              {item._fallback && <span style={{ fontSize: 9, fontWeight: 700, color: "#d97706", background: "#fef3c7", padding: "1px 6px", borderRadius: 99, flexShrink: 0 }}>Fallback</span>}
+              <span style={{ fontSize: 10, color: C.accent, fontWeight: 600, flexShrink: 0 }}>Laden →</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ImprovePage() {
-  const [tab, setTab]               = useState("features"); // "bugs" | "features"
+  const [tab, setTab]               = useState("features");
   const [bugStatus, setBugStatus]   = useState("idle");
   const [bugResult, setBugResult]   = useState(null);
+  const [bugHistory, setBugHistory] = useState([]);
   const [featStatus, setFeatStatus] = useState("idle");
   const [featResult, setFeatResult] = useState(null);
+  const [featHistory, setFeatHistory] = useState([]);
   const [serverStatus, setServerStatus] = useState(null);
   const [countdown, setCountdown]   = useState(null);
   const [applyStatus, setApplyStatus] = useState({});
   const [errMsg, setErrMsg]         = useState("");
-  const tickRef    = useRef(null);
-  const pollRef    = useRef(null);
-  const prevFeatTs = useRef(null);
+  const tickRef = useRef(null);
+  const pollRef = useRef(null);
 
-  // Helper: fetch with JSON error extraction
-  async function apiFetch(url, opts = {}) {
-    const res = await fetch(url, opts);
-    let data;
-    try { data = await res.json(); } catch { data = {}; }
-    if (!res.ok) throw new Error(data?.error || `Fehler (HTTP ${res.status})`);
-    if (data?.error) throw new Error(data.error);
-    return data;
-  }
-
-  // Poll /improve-status; speed up to 5s when feature research is running
-  function startPolling(fast = false) {
-    clearInterval(pollRef.current);
-    pollRef.current = setInterval(async () => {
-      try {
-        const data = await apiFetch("/improve-status");
-        setServerStatus(data);
-        if (data.lastReport) { setBugResult(data.lastReport); setBugStatus(s => s === "idle" ? "done" : s); }
-
-        if (data.featureRunning) {
-          setFeatStatus("loading");
-          if (!fast) startPolling(true);
-        } else {
-          if (data.featureRunError) {
-            setErrMsg(data.featureRunError);
-            setFeatStatus("error");
-          } else {
-            setErrMsg("");  // clear stale errors when server reports healthy state
-          }
-          if (data.lastFeatures) {
-            const ts = data.lastFeatures.generatedAt;
-            if (ts !== prevFeatTs.current) {
-              prevFeatTs.current = ts;
-              setFeatResult(data.lastFeatures);
-              setFeatStatus("done");
-            }
-          }
-          if (fast) startPolling(false);
-        }
-      } catch {}
-    }, fast ? 5000 : 30000);
-  }
-
+  // ── Load persisted results on mount ──────────────────────────────────────
   useEffect(() => {
-    async function init() {
+    const savedFeat = lsGet(LS_FEAT_CURRENT);
+    const savedFeatHist = lsGet(LS_FEAT_HISTORY) || [];
+    const savedBug = lsGet(LS_BUG_CURRENT);
+    const savedBugHist = lsGet(LS_BUG_HISTORY) || [];
+
+    if (savedFeat) { setFeatResult(savedFeat); setFeatStatus("done"); }
+    if (savedFeatHist.length) setFeatHistory(savedFeatHist);
+    if (savedBug)  { setBugResult(savedBug);   setBugStatus("done"); }
+    if (savedBugHist.length) setBugHistory(savedBugHist);
+  }, []);
+
+  // ── Poll server status (log count, last run times, test status) ──────────
+  useEffect(() => {
+    async function fetchStatus() {
       try {
-        const data = await apiFetch("/improve-status");
+        const res = await fetch("/improve-status");
+        if (!res.ok) return;
+        const data = await res.json();
         setServerStatus(data);
-        setErrMsg("");  // always clear stale errors on fresh status load
-        if (data.lastReport)   { setBugResult(data.lastReport);    setBugStatus("done"); }
-        if (data.lastFeatures) {
-          prevFeatTs.current = data.lastFeatures.generatedAt;
-          setFeatResult(data.lastFeatures); setFeatStatus("done");
+        // If KV has newer data than localStorage, use it
+        if (data.lastFeatures?.generatedAt) {
+          const local = lsGet(LS_FEAT_CURRENT);
+          if (!local || data.lastFeatures.generatedAt > (local.generatedAt || "")) {
+            setFeatResult(data.lastFeatures);
+            setFeatStatus("done");
+            saveResult(LS_FEAT_CURRENT, LS_FEAT_HISTORY, data.lastFeatures);
+            setFeatHistory(lsGet(LS_FEAT_HISTORY) || []);
+          }
         }
-        if (data.featureRunning) setFeatStatus("loading");
-        startPolling(!!data.featureRunning);
+        if (data.lastReport?.generatedAt) {
+          const local = lsGet(LS_BUG_CURRENT);
+          if (!local || data.lastReport.generatedAt > (local.generatedAt || "")) {
+            setBugResult(data.lastReport);
+            setBugStatus("done");
+            saveResult(LS_BUG_CURRENT, LS_BUG_HISTORY, data.lastReport);
+            setBugHistory(lsGet(LS_BUG_HISTORY) || []);
+          }
+        }
       } catch {}
     }
-    init();
+    fetchStatus();
+    pollRef.current = setInterval(fetchStatus, 60000); // light poll every 60s
     return () => clearInterval(pollRef.current);
   }, []);
 
+  // ── Countdown ticker ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!serverStatus?.nextAutoRun) return;
     clearInterval(tickRef.current);
@@ -224,31 +293,58 @@ export default function ImprovePage() {
     return () => clearInterval(tickRef.current);
   }, [serverStatus?.nextAutoRun]);
 
-  async function runBugAnalysis() {
-    setBugStatus("loading"); setErrMsg("");
+  // ── Run Research (direct await – no fire-and-forget) ─────────────────────
+  async function runResearch() {
+    setFeatStatus("loading");
+    setErrMsg("");
     try {
-      const data = await apiFetch("/improve-analyze", {
+      const res = await fetch("/improve-research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
         signal: AbortSignal.timeout(90000),
       });
-      setBugResult(data); setBugStatus("done");
-    } catch (e) { setErrMsg(e.message); setBugStatus("error"); }
+      const data = await res.json();
+      if (data.error && !data.topGaps) {
+        setErrMsg(data.error);
+        setFeatStatus("error");
+      } else {
+        saveResult(LS_FEAT_CURRENT, LS_FEAT_HISTORY, data);
+        setFeatResult(data);
+        setFeatHistory(lsGet(LS_FEAT_HISTORY) || []);
+        setFeatStatus("done");
+      }
+    } catch (e) {
+      setErrMsg(e.name === "TimeoutError" ? "Zeitüberschreitung – bitte nochmal versuchen (Claude braucht ~30s)" : "Fehler: " + e.message);
+      setFeatStatus("error");
+    }
   }
 
-  function runResearch() {
-    setFeatStatus("loading"); setErrMsg("");
-    fetch("/improve-research", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    })
-      .then(r => r.json())
-      .then(d => { if (d.error && !d.running) { setErrMsg(d.error); setFeatStatus("error"); } })
-      .catch(e => { setErrMsg("Analyse konnte nicht gestartet werden: " + e.message); setFeatStatus("error"); });
-    // Start fast polling immediately regardless of trigger response
-    startPolling(true);
+  // ── Run Bug Analysis ──────────────────────────────────────────────────────
+  async function runBugAnalysis() {
+    setBugStatus("loading");
+    setErrMsg("");
+    try {
+      const res = await fetch("/improve-analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(90000),
+      });
+      const data = await res.json();
+      if (data.error && !data.patterns) {
+        setErrMsg(data.error);
+        setBugStatus("error");
+      } else {
+        saveResult(LS_BUG_CURRENT, LS_BUG_HISTORY, data);
+        setBugResult(data);
+        setBugHistory(lsGet(LS_BUG_HISTORY) || []);
+        setBugStatus("done");
+      }
+    } catch (e) {
+      setErrMsg(e.name === "TimeoutError" ? "Zeitüberschreitung – bitte nochmal versuchen" : "Fehler: " + e.message);
+      setBugStatus("error");
+    }
   }
 
   async function applyFeature(fileName) {
@@ -266,11 +362,11 @@ export default function ImprovePage() {
   }
 
   const statItems = useMemo(() => [
-    { icon: BarChart2, label: "Geloggte Fehler",   value: serverStatus?.logCount ?? "–", sub: "seit Server-Start",      color: C.accent },
-    { icon: Clock,     label: "Nächste Auto-Analyse", value: countdown != null ? fmtCountdown(countdown) : "Manuell", sub: serverStatus?.nextAutoRun ? "1× täglich automatisch" : "Lokal: 1× täglich · Jetzt: manuell", color: "#d97706" },
-    { icon: History,   label: "Letzter Fehler-Lauf", value: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastAutoRun ? new Date(serverStatus.lastAutoRun).toLocaleDateString("de-DE") : "noch keiner", color: C.success },
-    { icon: Target,    label: "Letzter Feature-Lauf", value: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "–", sub: serverStatus?.lastResearchRun ? new Date(serverStatus.lastResearchRun).toLocaleDateString("de-DE") : "noch keiner", color: "#7c3aed" },
-  ], [serverStatus, countdown]);
+    { icon: BarChart2, label: "Geloggte Fehler",      value: serverStatus?.logCount ?? "–",     sub: "seit Server-Start",                color: C.accent },
+    { icon: Clock,     label: "Nächster Auto-Lauf",   value: countdown != null ? fmtCountdown(countdown) : "Manuell", sub: serverStatus?.nextAutoRun ? "1× täglich automatisch" : "Kein Auto-Schedule", color: "#d97706" },
+    { icon: History,   label: "Letzter Fehler-Scan",  value: bugResult?.generatedAt ? fmtDate(bugResult.generatedAt).slice(0,5) : "–",  sub: bugResult?.generatedAt ? fmtDate(bugResult.generatedAt) : "noch keiner", color: C.success },
+    { icon: Target,    label: "Letzter Feature-Scan", value: featResult?.generatedAt ? fmtDate(featResult.generatedAt).slice(0,5) : "–", sub: featResult?.generatedAt ? fmtDate(featResult.generatedAt) : "noch keiner", color: "#7c3aed" },
+  ], [serverStatus, countdown, bugResult, featResult]);
 
   return (
     <div style={{ maxWidth: 920, margin: "0 auto", padding: "32px 24px 60px" }}>
@@ -282,9 +378,8 @@ export default function ImprovePage() {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 24, fontWeight: 800, color: C.text, margin: 0 }}>Autonome Verbesserung</h1>
-          <p style={{ fontSize: 13, color: C.textSoft, margin: 0 }}>Fehler-Diagnose + Markt-Analyse + Feature-Entwicklung — 1× täglich automatisch</p>
+          <p style={{ fontSize: 13, color: C.textSoft, margin: 0 }}>KI-Diagnose · Markt-Analyse · Feature-Entwicklung — Ergebnisse werden persistent gespeichert</p>
         </div>
-        {/* Test-Status-Badge */}
         {serverStatus?.tests?.ts && (
           <div style={{
             display: "flex", alignItems: "center", gap: 6, padding: "6px 12px",
@@ -295,8 +390,7 @@ export default function ImprovePage() {
           }}>
             {serverStatus.tests.failed > 0
               ? <><AlertTriangle size={11} strokeWidth={IW} /> {serverStatus.tests.failed} Test(s) rot</>
-              : <><CheckCircle size={11} strokeWidth={IW} /> {serverStatus.tests.passed} Tests grün</>
-            }
+              : <><CheckCircle size={11} strokeWidth={IW} /> {serverStatus.tests.passed} Tests grün</>}
           </div>
         )}
       </div>
@@ -309,7 +403,7 @@ export default function ImprovePage() {
               <Ico size={12} color={color} strokeWidth={IW} />
               <div style={{ fontSize: 9, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".05em" }}>{label}</div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 900, color, fontFamily: FONT_DISPLAY, lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color, fontFamily: FONT_DISPLAY, lineHeight: 1 }}>{value}</div>
             <div style={{ fontSize: 9, color: C.textMute, marginTop: 3 }}>{sub}</div>
           </div>
         ))}
@@ -321,7 +415,7 @@ export default function ImprovePage() {
           { id: "features", label: "Feature-Entwicklung", icon: Rocket },
           { id: "bugs",     label: "Fehler & Fixes",      icon: AlertTriangle },
         ].map(({ id, label, icon: Ico }) => (
-          <button key={id} onClick={() => setTab(id)} style={{
+          <button key={id} onClick={() => { setTab(id); setErrMsg(""); }} style={{
             display: "flex", alignItems: "center", gap: 7,
             padding: "9px 18px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: FONT,
             background: tab === id ? C.accent : C.surface,
@@ -333,21 +427,21 @@ export default function ImprovePage() {
         ))}
       </div>
 
-      {/* Error message — only show while in error state, not as stale leftover */}
+      {/* Error */}
       {errMsg && (featStatus === "error" || bugStatus === "error") && (
         <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: T.rMd, background: "#fee2e2", border: "1px solid #fca5a5", fontSize: 12, color: "#7f1d1d" }}>
           <AlertTriangle size={12} strokeWidth={IW} style={{ marginRight: 6 }} />{errMsg}
         </div>
       )}
 
-      {/* ─── TAB: Feature-Entwicklung ─────────────────────────────────────────── */}
+      {/* ─── TAB: Feature-Entwicklung ────────────────────────────────────────── */}
       {tab === "features" && (
         <>
-          {/* How it works — 2 steps only, dev+deploy runs fully autonomously in background */}
+          {/* How it works */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
             {[
-              { icon: Globe,  label: "Markt-Scan & Gap-Analyse", desc: "Aktuelle Trends + Vergleich mit SimilarWeb, SEMrush, Ahrefs — identifiziert Top-Priorität" },
-              { icon: Rocket, label: "Entwicklung & Deploy",      desc: "Code wird generiert, getestet, dokumentiert und automatisch in die App eingefügt" },
+              { icon: Globe,  label: "Markt-Scan & Gap-Analyse", desc: "Aktuelle Trends + Vergleich mit SimilarWeb, SEMrush, Ahrefs — identifiziert Top-Prioritäten" },
+              { icon: Rocket, label: "Persistenz & Archiv",      desc: `Ergebnisse bleiben nach dem Scan gespeichert · Archiv der letzten ${MAX_HISTORY} Läufe` },
             ].map(({ icon: Ico, label, desc }) => (
               <div key={label} style={{ padding: "12px 14px", borderRadius: T.rMd, background: C.surface, border: `1px solid ${C.border}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
@@ -359,74 +453,60 @@ export default function ImprovePage() {
             ))}
           </div>
 
-          {/* Action */}
-          <Card style={{ padding: 18, marginBottom: featStatus === "loading" ? 0 : 20 }}>
+          {/* Action card */}
+          <Card style={{ padding: 18, marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Markt-Analyse + Feature-Generierung starten</div>
                 <div style={{ fontSize: 12, color: C.textSoft, marginTop: 2 }}>
                   {featResult?.generatedAt
-                    ? `Letzter Lauf: ${new Date(featResult.generatedAt).toLocaleString("de-DE")} · ${featResult.topGaps?.length ?? 0} Lücken gefunden`
-                    : "Claude analysiert Competitors und generiert Code für das Top-Feature"}
+                    ? `Letzter Scan: ${fmtDate(featResult.generatedAt)} · ${featResult.topGaps?.length ?? 0} Lücken · ${featResult._fallback ? "⚠ Fallback-Daten" : "✓ KI-Analyse"}`
+                    : "Claude analysiert Competitors und identifiziert Feature-Lücken (~30s)"}
                 </div>
               </div>
               <Btn onClick={runResearch} disabled={featStatus === "loading"} icon={featStatus === "loading" ? RefreshCw : Zap}>
-                {featStatus === "loading" ? "Läuft…" : "Jetzt analysieren"}
+                {featStatus === "loading" ? "Läuft…" : (featResult ? "Neu scannen" : "Jetzt analysieren")}
               </Btn>
             </div>
-            {/* Progress indicator — visible while async research runs on server */}
+
+            {/* Loading indicator */}
             {featStatus === "loading" && (
               <div style={{ marginTop: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: C.textSoft, marginBottom: 6 }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <RefreshCw size={11} strokeWidth={IW} style={{ animation: "spin 1.2s linear infinite" }} />
-                    KI analysiert Markt + priorisiert Lücken (~30s) · Code-Generierung startet danach automatisch
+                    Claude analysiert Marktlücken (~30–60s) — bitte warten
                   </span>
-                  <span style={{ color: C.textMute }}>automatische Aktualisierung alle 5s</span>
                 </div>
-                {/* Animated progress bar */}
                 <div style={{ height: 4, borderRadius: 99, background: C.border, overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", borderRadius: 99,
-                    background: `linear-gradient(90deg, ${C.accent}, #7c3aed)`,
-                    animation: "progressIndeterminate 2s ease-in-out infinite",
-                    width: "40%",
-                  }} />
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                  {["Markt-Scan", "Gap-Analyse"].map((step, i) => (
-                    <div key={step} style={{
-                      display: "flex", alignItems: "center", gap: 5,
-                      padding: "3px 10px", borderRadius: 99, fontSize: 10, fontWeight: 600,
-                      background: C.accentLight, color: C.accent,
-                      border: `1px solid ${C.accent}30`,
-                      animation: `fadeIn 0.3s ease ${i * 0.15}s both`,
-                    }}>
-                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.accent, animation: "pulse 1.5s ease infinite" }} />
-                      {step}
-                    </div>
-                  ))}
+                  <div style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${C.accent}, #7c3aed)`, animation: "progressIndeterminate 2s ease-in-out infinite", width: "40%" }} />
                 </div>
               </div>
             )}
           </Card>
-          {featStatus === "loading" && <div style={{ marginBottom: 20 }} />}
 
+          {/* Archive */}
+          <HistoryPanel
+            history={featHistory}
+            label="Scans"
+            onRestore={item => { setFeatResult(item); setFeatStatus("done"); setErrMsg(""); }}
+          />
+
+          {/* Results */}
           {featStatus === "done" && featResult && (
             <>
-              {featResult.autoRun && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, padding: "7px 14px", borderRadius: T.rMd, background: "#ede9fe", border: "1px solid #c4b5fd", fontSize: 12, color: "#5b21b6", fontWeight: 600 }}>
-                  <Bot size={12} strokeWidth={IW} />
-                  Automatisch generiert · {new Date(featResult.generatedAt).toLocaleString("de-DE")}
-                </div>
-              )}
+              {/* Meta badge */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, padding: "7px 14px", borderRadius: T.rMd, background: featResult._fallback ? "#fef3c7" : "#ede9fe", border: `1px solid ${featResult._fallback ? "#fde68a" : "#c4b5fd"}`, fontSize: 12, color: featResult._fallback ? "#92400e" : "#5b21b6", fontWeight: 600 }}>
+                <Bot size={12} strokeWidth={IW} />
+                {featResult._fallback ? "⚠ Fallback-Daten (KI nicht erreichbar)" : "KI-Analyse"}
+                {" · "}{fmtDate(featResult.generatedAt)}
+                {featResult.topGaps?.length > 0 && ` · ${featResult.topGaps.length} Lücken`}
+              </div>
 
               {/* Market trends */}
               {featResult.marketTrends?.length > 0 && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>
-                    Aktuelle Markt-Trends
-                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>Aktuelle Markt-Trends</div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {featResult.marketTrends.map((t, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, background: C.accentLight, border: `1px solid ${C.accent}30`, fontSize: 12, color: C.accent, fontWeight: 500 }}>
@@ -450,9 +530,7 @@ export default function ImprovePage() {
               {/* Quick wins */}
               {featResult.quickWins?.length > 0 && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>
-                    Quick Wins (wenig Aufwand, hoher Impact)
-                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textSoft, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>Quick Wins</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 8 }}>
                     {featResult.quickWins.map((w, i) => (
                       <div key={i} style={{ padding: "12px 14px", borderRadius: T.rMd, background: "#dcfce7", border: "1px solid #bbf7d0" }}>
@@ -465,7 +543,15 @@ export default function ImprovePage() {
                 </div>
               )}
 
-              {/* Generated feature code */}
+              {/* Summary */}
+              {featResult.summary && (
+                <Card style={{ padding: "14px 18px", marginBottom: 20, background: C.accentLight, border: `1px solid ${C.accent}30` }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".05em" }}>Fazit</div>
+                  <div style={{ fontSize: 13, color: C.text, lineHeight: 1.6 }}>{featResult.summary}</div>
+                </Card>
+              )}
+
+              {/* Next feature */}
               {featResult.nextFeature && (
                 <Card style={{ padding: 20, borderTop: `3px solid ${C.accent}` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -476,32 +562,26 @@ export default function ImprovePage() {
                       <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>{featResult.nextFeature.name}</div>
                       <div style={{ fontSize: 11, color: C.textSoft }}>{featResult.nextFeature.description}</div>
                     </div>
-                    <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                      {featResult.pendingFile && (
+                    {featResult.pendingFile && (
+                      <div style={{ marginLeft: "auto" }}>
                         <Btn
                           onClick={() => applyFeature(featResult.pendingFile)}
                           loading={applyStatus[featResult.pendingFile] === "loading"}
                           icon={applyStatus[featResult.pendingFile] === "done" ? CheckCircle : Rocket}
                         >
-                          {applyStatus[featResult.pendingFile] === "done"
-                            ? "Übernommen ✓"
-                            : applyStatus[featResult.pendingFile]?.startsWith("error")
-                              ? "Fehler — retry"
-                              : "In src/pages/ übernehmen"}
+                          {applyStatus[featResult.pendingFile] === "done" ? "Übernommen ✓" : applyStatus[featResult.pendingFile]?.startsWith("error") ? "Fehler – retry" : "In src/pages/ übernehmen"}
                         </Btn>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-
                   {applyStatus[featResult.pendingFile] === "done" && (
                     <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: T.rMd, background: "#dcfce7", fontSize: 12, color: "#14532d", fontWeight: 600 }}>
-                      ✓ Datei in src/pages/{featResult.pendingFile} gespeichert — jetzt in App.jsx und Sidebar einbinden!
+                      ✓ Datei gespeichert — jetzt in App.jsx und Sidebar einbinden!
                     </div>
                   )}
-
                   {featResult.generatedCode
                     ? <CodeBlock code={featResult.generatedCode} />
-                    : <div style={{ fontSize: 13, color: C.textSoft, padding: "20px 0", textAlign: "center" }}>Code wird beim nächsten Auto-Lauf generiert…</div>
+                    : <div style={{ fontSize: 13, color: C.textSoft, padding: "20px 0", textAlign: "center" }}>Code wird beim nächsten Scan generiert…</div>
                   }
                 </Card>
               )}
@@ -512,13 +592,13 @@ export default function ImprovePage() {
             <Card style={{ padding: 48, textAlign: "center" }}>
               <Package size={40} color={C.textSoft} strokeWidth={IW} style={{ margin: "0 auto 12px" }} />
               <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid, marginBottom: 6 }}>Noch keine Feature-Analyse</div>
-              <div style={{ fontSize: 12, color: C.textSoft }}>Klicke "Jetzt analysieren" um den Markt-Scan zu starten. Läuft automatisch 1× täglich.</div>
+              <div style={{ fontSize: 12, color: C.textSoft }}>Klicke "Jetzt analysieren" — Ergebnis wird lokal gespeichert und bleibt bis zum nächsten Scan erhalten.</div>
             </Card>
           )}
         </>
       )}
 
-      {/* ─── TAB: Fehler & Fixes ──────────────────────────────────────────────── */}
+      {/* ─── TAB: Fehler & Fixes ─────────────────────────────────────────────── */}
       {tab === "bugs" && (
         <>
           <Card style={{ padding: 18, marginBottom: 20, display: "flex", alignItems: "center", gap: 16 }}>
@@ -526,22 +606,30 @@ export default function ImprovePage() {
               <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Fehler-Diagnose starten</div>
               <div style={{ fontSize: 12, color: C.textSoft, marginTop: 2 }}>
                 {bugResult?.generatedAt
-                  ? `Letzter Lauf: ${new Date(bugResult.generatedAt).toLocaleString("de-DE")} · ${serverStatus?.logCount ?? 0} Fehler geloggt`
-                  : "Nutze die App — Fehler werden automatisch geloggt"}
+                  ? `Letzter Scan: ${fmtDate(bugResult.generatedAt)} · ${serverStatus?.logCount ?? 0} Fehler geloggt${bugResult._fallback ? " · ⚠ Fallback" : ""}`
+                  : "Analysiert geloggte Fehler und gibt konkrete Fix-Vorschläge (~30s)"}
               </div>
             </div>
             <Btn onClick={runBugAnalysis} loading={bugStatus === "loading"} icon={bugStatus === "loading" ? RefreshCw : Zap}>
-              {bugStatus === "loading" ? "Analysiere…" : "Diagnose starten"}
+              {bugStatus === "loading" ? "Analysiere…" : (bugResult ? "Neu scannen" : "Diagnose starten")}
             </Btn>
           </Card>
 
+          {/* Archive */}
+          <HistoryPanel
+            history={bugHistory}
+            label="Diagnosen"
+            onRestore={item => { setBugResult(item); setBugStatus("done"); setErrMsg(""); }}
+          />
+
           {bugStatus === "done" && bugResult && (
             <>
-              {bugResult.autoRun && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, padding: "7px 14px", borderRadius: T.rMd, background: C.accentLight, border: `1px solid ${C.accent}30`, fontSize: 12, color: C.accent, fontWeight: 600 }}>
-                  <Bot size={12} strokeWidth={IW} /> Auto-Report · {new Date(bugResult.generatedAt).toLocaleString("de-DE")} · {bugResult.logCount} Ereignisse
-                </div>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, padding: "7px 14px", borderRadius: T.rMd, background: bugResult._fallback ? "#fef3c7" : C.accentLight, border: `1px solid ${bugResult._fallback ? "#fde68a" : C.accent + "30"}`, fontSize: 12, color: bugResult._fallback ? "#92400e" : C.accent, fontWeight: 600 }}>
+                <Bot size={12} strokeWidth={IW} />
+                {bugResult._fallback ? "⚠ Fallback-Daten" : "KI-Diagnose"}
+                {" · "}{fmtDate(bugResult.generatedAt)}
+                {bugResult.logCount != null && ` · ${bugResult.logCount} Ereignisse`}
+              </div>
 
               {bugResult.patterns?.length > 0 && (
                 <div style={{ marginBottom: 20 }}>
@@ -575,11 +663,18 @@ export default function ImprovePage() {
                 </div>
               )}
 
+              {bugResult.summary && (
+                <Card style={{ padding: "14px 18px", marginTop: 20, background: C.accentLight, border: `1px solid ${C.accent}30` }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".05em" }}>Fazit</div>
+                  <div style={{ fontSize: 13, color: C.text, lineHeight: 1.6 }}>{bugResult.summary}</div>
+                </Card>
+              )}
+
               {!bugResult.patterns?.length && (
                 <Card style={{ padding: 40, textAlign: "center" }}>
                   <CheckCircle size={36} color={C.success} strokeWidth={IW} style={{ margin: "0 auto 12px" }} />
                   <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid }}>Keine kritischen Fehler-Muster</div>
-                  <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Weiter so — die App läuft stabil.</div>
+                  <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Die App läuft stabil.</div>
                 </Card>
               )}
             </>
@@ -588,8 +683,8 @@ export default function ImprovePage() {
           {bugStatus === "idle" && (
             <Card style={{ padding: 48, textAlign: "center" }}>
               <AlertTriangle size={40} color={C.textSoft} strokeWidth={IW} style={{ margin: "0 auto 12px" }} />
-              <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid }}>Noch keine Diagnose gelaufen</div>
-              <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Starte die Diagnose manuell oder warte auf den nächsten Auto-Lauf (1× täglich).</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: C.textMid }}>Noch keine Diagnose</div>
+              <div style={{ fontSize: 12, color: C.textSoft, marginTop: 6 }}>Starte die Diagnose – Ergebnis wird gespeichert und bleibt bis zum nächsten Scan erhalten.</div>
             </Card>
           )}
         </>

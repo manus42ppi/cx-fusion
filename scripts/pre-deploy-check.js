@@ -122,7 +122,15 @@ for (const [, importPath] of lazyMatches) {
     missingImport = true;
   }
 }
-if (!missingImport) pass(`All ${lazyMatches.length} lazy imports resolve to existing files`);
+// Also flag static (non-lazy) page imports in App.jsx — they break code-splitting
+// and can cause build failures if the file has syntax errors.
+const staticPageImports = [...appSrc.matchAll(/^import\s+\w+\s+from\s+["'](\.\/pages\/[^"']+)["']/gm)];
+let badStaticImport = false;
+for (const [line, importPath] of staticPageImports) {
+  fail(`App.jsx has a STATIC import for a page: "${importPath}" — convert to React.lazy() to prevent build failures`);
+  badStaticImport = true;
+}
+if (!missingImport && !badStaticImport) pass(`All ${lazyMatches.length} lazy imports resolve to existing files (no static page imports)`);
 
 // ─── 4. Functions export required handler ─────────────────────────────────────
 section("Check 4 – Cloudflare Functions export a request handler");

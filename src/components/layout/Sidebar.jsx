@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Globe, GitCompare, Briefcase, BookText, Bot, Layers, Code2, ListChecks, LogOut, Star } from "lucide-react";
+import { LayoutDashboard, Globe, GitCompare, Briefcase, BookText, Bot, Layers, Code2, ListChecks, LogOut, Share2 } from "lucide-react";
 import { C, T, FONT, IW } from "../../constants/colors.js";
 import { useApp } from "../../context/AppContext.jsx";
 
@@ -20,7 +20,7 @@ const NAV_GROUPS = [
       { id: "content",  label: "Content-Audit",       icon: BookText,   desc: "Ton · Sentiment · SEO-Audit" },
       { id: "feat-schema-validator", label: "Structure-Audit", icon: Code2, desc: "Schema.org-Validierung & Rich-Snippet-Vorschau" },
       // ─── AUTO_NAV_START ─────────────────────────────────────────────────────
-      { id: "social-media-stats", label: "Social Intelligence", icon: Star, desc: "Social-Media-Präsenz & Engagement analysieren" },
+      { id: "social-media-stats", label: "Social Intelligence", icon: Share2, desc: "Social-Media-Präsenz & Engagement analysieren" },
 // ─── AUTO_NAV_END ───────────────────────────────────────────────────────
       { id: "compare",  label: "Website-Vergleich",  icon: GitCompare, desc: "Zwei Websites gegenüberstellen" },
       { id: "batch",    label: "Batch-Analyse",      icon: Layers,     desc: "Bis zu 50 Domains auf einmal" },
