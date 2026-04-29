@@ -185,6 +185,13 @@
       "desc": "Echte Suchvolumen, Difficulty & CPC-Daten",
       "page": "feat_real-keyword-volume.jsx",
       "addedAt": "2026-04-29T08:36:37.183Z"
+    },
+    {
+      "id": "social-intelligence-live",
+      "name": "Social Intelligence",
+      "desc": "Social-Media-Präsenz & Engagement analysieren",
+      "page": "feat_social-intelligence-live.jsx",
+      "addedAt": "2026-04-29T09:36:35.066Z"
     }
   ],
   "competitors": [

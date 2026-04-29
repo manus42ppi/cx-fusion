@@ -20,7 +20,7 @@ const NAV_GROUPS = [
       { id: "content",  label: "Content-Audit",       icon: BookText,   desc: "Ton · Sentiment · SEO-Audit" },
       { id: "feat-schema-validator", label: "Structure-Audit", icon: Code2, desc: "Schema.org-Validierung & Rich-Snippet-Vorschau" },
       // ─── AUTO_NAV_START ─────────────────────────────────────────────────────
-      { id: "social-media-stats", label: "Social Intelligence", icon: Share2, desc: "Social-Media-Präsenz & Engagement" },
+      { id: "social-media-stats", label: "Social Intelligence", icon: Share2, desc: "Social-Media-Präsenz & Engagement analysieren" },
 // ─── AUTO_NAV_END ───────────────────────────────────────────────────────
       { id: "compare",  label: "Website-Vergleich",  icon: GitCompare, desc: "Zwei Websites gegenüberstellen" },
       { id: "batch",    label: "Batch-Analyse",      icon: Layers,     desc: "Bis zu 50 Domains auf einmal" },
