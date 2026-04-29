@@ -164,6 +164,27 @@
       "desc": "Social-Media-Präsenz & Engagement analysieren",
       "page": "feat_social-media-stats.jsx",
       "addedAt": "2026-04-29T04:24:24.332Z"
+    },
+    {
+      "id": "browser-extension",
+      "name": "Extension",
+      "desc": "1-Klick-Analyse im Browser",
+      "page": "feat_browser-extension.jsx",
+      "addedAt": "2026-04-29T06:36:29.113Z"
+    },
+    {
+      "id": "feat-historical-trends-dashboard",
+      "name": "Trend-Monitor",
+      "desc": "Traffic & SEO-Verlauf über Zeit verfolgen",
+      "page": "feat_feat-historical-trends-dashboard.jsx",
+      "addedAt": "2026-04-29T08:21:41.341Z"
+    },
+    {
+      "id": "real-keyword-volume",
+      "name": "Keyword Hub",
+      "desc": "Echte Suchvolumen, Difficulty & CPC-Daten",
+      "page": "feat_real-keyword-volume.jsx",
+      "addedAt": "2026-04-29T08:36:37.183Z"
     }
   ],
   "competitors": [

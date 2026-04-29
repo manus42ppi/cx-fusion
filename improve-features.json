@@ -1,22 +1,22 @@
 {
-  "generatedAt": 1777436596926,
+  "generatedAt": 1777452620620,
   "autoRun": true,
   "codegenPending": false,
   "marketTrends": [
-    "KI-gestützte Wettbewerbsanalyse wird zum Standard – Agenturen erwarten automatisierte Insights ohne manuelle Recherche",
-    "Zero-Click-SERPs und Featured Snippets erhöhen den Bedarf an Structured-Data- und SERP-Feature-Optimierung",
-    "Privacy-First-Analytics treibt Nachfrage nach KI-basierten Traffic-Schätzungen als Alternative zu Cookies",
-    "Browser-Extensions gewinnen als Low-Friction-Einstiegspunkt für SaaS-Tools massiv an Bedeutung",
-    "Social Signals werden zunehmend als Rankingfaktor-Proxy und Brand-Health-Indikator genutzt",
-    "Backlink-Qualität schlägt Quantität – detaillierte Link-Profile sind unverzichtbar für Enterprise-SEO",
-    "Historische Daten (12+ Monate) werden Pflicht für datengetriebene Content-Strategien",
-    "Lead-Generierung via Tech-Stack-Targeting wächst als B2B-Sales-Channel stark"
+    "KI-gestützte Content-Optimierung in Echtzeit gewinnt massiv an Bedeutung (2025-2026)",
+    "Zero-Click-Suchen & SGE (Search Generative Experience) verändern Rank-Tracking-Anforderungen",
+    "Datengetriebene Lead-Generierung über Tech-Stack-Filter wird von B2B-Agenturen stark nachgefragt",
+    "Echte Backlink-Daten gelten als Vertrauenssignal — KI-Schätzungen reichen für Enterprise nicht mehr",
+    "API-first-Ansätze ermöglichen Agenturen White-Label-Integrationen und skalierbare Workflows",
+    "Historische SEO-Daten (12+ Monate) sind Pflicht für Reporting an Kunden",
+    "PPC + SEO-Konvergenz: Agenturen wollen beides in einem Tool sehen",
+    "Browser-Extensions als Akquisitionskanal gewinnen wieder an Bedeutung (Wappalyzer-Effekt)"
   ],
   "topGaps": [
     {
-      "id": "backlink-profile",
+      "id": "gap_backlink_profile",
       "name": "Echtes Backlink-Profil",
-      "why": "KI-Schätzungen reichen für Agenturen und SEO-Experten nicht aus – sie benötigen echte Link-Daten für Audits, Pitches und Linkbuilding-Kampagnen. Ohne echte Backlink-Daten verliert cx-fusion gegen Ahrefs/SEMrush bei jedem Enterprise-Deal.",
+      "why": "KI-Schätzungen reichen für Agenturen und SEO-Experten nicht aus. Ahrefs und SEMrush dominieren diesen Bereich. Echter Link-Graph ist der #1-Grund, warum Nutzer cx-fusion verlassen.",
       "competitorHas": [
         "Ahrefs",
         "SEMrush",
@@ -28,35 +28,9 @@
       "priority": 1
     },
     {
-      "id": "social-media-stats",
-      "name": "Social-Media-Statistiken",
-      "why": "Marketing-Agenturen und Content-Manager brauchen Social-Präsenz-Daten (Follower, Engagement, Posting-Frequenz) als Teil der Wettbewerbsanalyse. Aktuell fehlt dieser Kanal komplett, obwohl er direkt in bestehende Domain-Analysen integrierbar wäre.",
-      "competitorHas": [
-        "SimilarWeb",
-        "SEMrush"
-      ],
-      "impact": "high",
-      "effort": "medium",
-      "priority": 2
-    },
-    {
-      "id": "browser-extension",
-      "name": "Browser-Extension (1-Klick-Analyse)",
-      "why": "Niedrigste Einstiegshürde für Viral Growth und tägliche aktive Nutzung. Wettbewerber wie SimilarWeb und Wappalyzer gewinnen massiv über Extensions neue Nutzer. Jede besuchte Website wird zum Akquisitionskanal.",
-      "competitorHas": [
-        "SimilarWeb",
-        "Wappalyzer",
-        "SEMrush",
-        "Ahrefs"
-      ],
-      "impact": "high",
-      "effort": "medium",
-      "priority": 3
-    },
-    {
-      "id": "historical-trends",
+      "id": "gap_historical_trends",
       "name": "Historische Trend-Daten (12+ Monate)",
-      "why": "Agenturen müssen Kunden langfristige Entwicklungen zeigen – monatliche Snapshots reichen nicht. Ohne 12-Monats-Verlauf für Traffic und Rankings fehlt die Basis für Strategie-Reportings und ROI-Nachweise.",
+      "why": "Ohne Verlaufsdaten ist kein Kunden-Reporting möglich. Agenturen brauchen Zeitreihen für Traffic, Rankings und SEO-Score — monatliche Snapshots reichen als MVP.",
       "competitorHas": [
         "SimilarWeb",
         "SEMrush",
@@ -64,16 +38,40 @@
         "SpyFu"
       ],
       "impact": "high",
+      "effort": "medium",
+      "priority": 2
+    },
+    {
+      "id": "gap_ppc_analysis",
+      "name": "PPC / Google Ads Analyse",
+      "why": "Marketing-Agenturen betreuen fast immer paid + organic gleichzeitig. SpyFu und SEMrush bieten Competitor-Ad-Daten — cx-fusion hat hier eine klare Lücke im Agentur-Workflow.",
+      "competitorHas": [
+        "SEMrush",
+        "SpyFu",
+        "Ahrefs"
+      ],
+      "impact": "high",
+      "effort": "high",
+      "priority": 3
+    },
+    {
+      "id": "gap_site_crawl",
+      "name": "Vollständiger Website-Crawler (technisches SEO)",
+      "why": "Screaming Frog ist Marktführer bei technischen Crawls. 100+ On-Page-Checks über alle Unterseiten hinweg sind für SEO-Experten Standard — der aktuelle Audit prüft nur Einzelseiten.",
+      "competitorHas": [
+        "Screaming Frog",
+        "SEMrush",
+        "Ahrefs"
+      ],
+      "impact": "high",
       "effort": "high",
       "priority": 4
     },
     {
-      "id": "ppc-analysis",
-      "name": "PPC- & Paid-Search-Analyse",
-      "why": "Marketing-Agenturen mit Performance-Marketing-Fokus fehlt ein komplettes Wettbewerbsbild ohne PPC-Daten. Google Ads-Spend-Schätzungen, Top-Anzeigen und Ad-Keywords sind bei SpyFu und SEMrush Kernfeatures mit hoher Zahlungsbereitschaft.",
+      "id": "gap_audience_insights",
+      "name": "Audience & Demografie-Insights",
+      "why": "SimilarWeb-Alleinstellungsmerkmal: Altersgruppen, Interessen, Geräte-Split der Website-Besucher. Für Content-Manager und Kampagnenplanung extrem wertvoll.",
       "competitorHas": [
-        "SEMrush",
-        "SpyFu",
         "SimilarWeb"
       ],
       "impact": "medium",
@@ -81,9 +79,9 @@
       "priority": 5
     },
     {
-      "id": "domain-authority-score",
-      "name": "Eigener Authority-Score (cx-Score)",
-      "why": "Moz DA und Ahrefs DR sind Industrie-Standard-Metriken. Ein eigener, klar kommunizierter Authority-Score stärkt die Marken-Identität von cx-fusion und gibt Nutzern eine vertraute, vergleichbare Kennzahl ohne Drittanbieter-Abhängigkeit.",
+      "id": "gap_domain_authority_score",
+      "name": "Domain Authority / Trust Score (eigene Metrik)",
+      "why": "Moz DA ist Industriestandard für Link-Bewertung. Eine eigene, erklärbare Metrik (cx-Score) würde cx-fusion als eigenständige Datenquelle positionieren statt als Aggregator.",
       "competitorHas": [
         "Moz",
         "Ahrefs",
@@ -92,56 +90,77 @@
       "impact": "medium",
       "effort": "medium",
       "priority": 6
+    },
+    {
+      "id": "gap_ecommerce_detection",
+      "name": "E-Commerce-Intelligence (Produkte, Shop-Analyse)",
+      "why": "BuiltWith erkennt Shop-Systeme + Umsatzschätzungen. Für Lead-Finder-Nutzer und Wettbewerbsanalysten im E-Commerce-Umfeld ein klarer Mehrwert.",
+      "competitorHas": [
+        "BuiltWith",
+        "SimilarWeb"
+      ],
+      "impact": "medium",
+      "effort": "medium",
+      "priority": 7
     }
   ],
   "quickWins": [
     {
-      "id": "social-media-widget",
-      "name": "Social-Media-Schnellübersicht in Domain-Analyse",
-      "description": "Automatische Erkennung und Verlinkung von Social-Profilen (LinkedIn, X, Instagram, Facebook, YouTube) einer Domain inkl. öffentlicher Follower-Zahlen via oEmbed/public APIs. Als neues Tab oder Card in der bestehenden Domain-Vollanalyse integrierbar – kein neues Backend nötig.",
-      "uiHint": "Neue 'Social'-Card in der Domain-Analyse mit Platform-Icons, Follower-Count-Badges und Engagement-Rate-Pill. Farbkodiert nach Plattform. Direkt unterhalb der Traffic-Karte platzieren."
+      "id": "qw_snapshot_scheduler",
+      "name": "Automatische wöchentliche Domain-Snapshots",
+      "description": "Gespeicherte Domains in der Kundenverwaltung automatisch wöchentlich neu analysieren und Deltas (Traffic +/-, SEO-Score +/-) als Mini-Trend speichern. Legt die Datenbasis für historische Trends ohne große neue Infrastruktur.",
+      "uiHint": "Toggle 'Auto-Monitor' in der Kundenverwaltungs-Karte; grüner Puls-Dot zeigt aktives Monitoring. Delta-Badge (+3 SEO / -12% Traffic) direkt auf der Domain-Karte."
     },
     {
-      "id": "whois-expiry-alert",
-      "name": "Domain-Ablauf-Monitor & Alert",
-      "description": "Bei gespeicherten Kunden-Domains automatisch WHOIS-Ablaufdatum im Dashboard anzeigen und bei <60 Tagen ein rotes Alert-Badge setzen. Daten sind bereits via WHOIS-Analyse vorhanden – nur UI-Layer und Logik fehlt.",
-      "uiHint": "In der Kundenverwaltung neben jedem Domain-Eintrag ein Ablauf-Badge: grün (>90d), gelb (30-90d), rot (<30d). Tooltip zeigt exaktes Ablaufdatum. Optional: E-Mail-Benachrichtigung als Toggle."
+      "id": "qw_competitor_snapshot_compare",
+      "name": "3-Wege-Domain-Vergleich (Triad View)",
+      "description": "Den bestehenden 2-Domain-Vergleich auf 3 Domains erweitern. Minimaler Entwicklungsaufwand, aber sofort höherer Mehrwert für Agenturen, die Kunden vs. 2 Wettbewerber darstellen.",
+      "uiHint": "+ Dritte Domain Button im Vergleichs-UI; Spalten-Layout 1:1:1 mit Highlighting der Best-in-Class-Werte in grün."
     },
     {
-      "id": "competitor-snapshot",
-      "name": "Auto-Competitor-Erkennung & Schnellvergleich",
-      "description": "Auf Basis von analysierten Keywords und Nische automatisch 3-5 Hauptwettbewerber einer Domain vorschlagen und einen 1-Klick-Vergleich anbieten. Nutzt vorhandene KI-Keyword-Daten und den bestehenden Domain-Vergleich.",
-      "uiHint": "Nach jeder Domain-Analyse: 'Erkannte Wettbewerber'-Section mit Avatar-Cards (Favicon + Domain + SEO-Score). CTA-Button 'Jetzt vergleichen' öffnet direkt den Domain-Vergleich mit vorausgefüllten Feldern."
+      "id": "qw_white_label_pdf",
+      "name": "White-Label PDF-Reports mit Agentur-Logo",
+      "description": "Beim PDF-Export optional Agentur-Name, Logo (Upload) und Primärfarbe hinterlegen. Reports werden dann gebrandeted exportiert — direkter Umsatzhebel für Agenturen.",
+      "uiHint": "Einstellungs-Seite: 'Report-Branding' Tab mit Logo-Upload, Farb-Picker, Vorschau-PDF. Export-Button zeigt 'Branded PDF' wenn konfiguriert."
     },
     {
-      "id": "seo-score-embed-badge",
-      "name": "Teilbarer SEO-Score-Badge",
-      "description": "Agenturen können einen dynamisch generierten SVG/PNG-Badge mit dem cx-fusion SEO-Score ihrer Kunden-Domain generieren und in Reports oder Websites einbetten. Viral-Marketing-Effekt + Markenbekanntheit.",
-      "uiHint": "Im SEO-Audit-Tab ein 'Badge teilen'-Button. Modal mit Vorschau des Badges (Score-Ring + cx-fusion-Logo + Domain), Copy-Button für Embed-Code (<img src='...'>) und direkter Download als PNG."
+      "id": "qw_serp_ctr_estimator",
+      "name": "CTR-Schätzer in der SERP-Vorschau",
+      "description": "Basierend auf Position und SERP-Feature-Typ (featured snippet, etc.) eine erwartete CTR-Range anzeigen (z.B. Position 1 = 28-35% CTR). Nutzt öffentliche CTR-Studien-Daten, kein API-Bedarf.",
+      "uiHint": "Unterhalb der SERP-Vorschau: kleiner Info-Banner 'Geschätzte CTR bei Position X: ~Y%' mit Link zur Methodik. Farb-kodiert grün/gelb/rot."
     },
     {
-      "id": "bulk-serp-export",
-      "name": "Batch-SERP-Vorschau-Export",
-      "description": "Alle SERP-Vorschauen einer Domain (Title, Description, URL) in einer einzigen CSV/Google-Sheets-kompatiblen Tabelle exportieren. Für Content-Manager bei großen Sites extrem wertvoll – UI dafür fehlt, Daten sind vorhanden.",
-      "uiHint": "Im SERP-Vorschau-Tab ein 'Alle exportieren'-Button oben rechts. Export enthält: URL, Title-Tag, Meta-Description, Zeichenzähler-Status (OK/Zu lang/Zu kurz) als farbige Spalte."
+      "id": "qw_bulk_export_scheduler",
+      "name": "Geplanter Batch-Export (E-Mail-Versand)",
+      "description": "Batch-Analyse für gespeicherte Domain-Listen wöchentlich/monatlich automatisch ausführen und Ergebnis-CSV per E-Mail versenden. Schafft Retention durch regelmäßigen Produktkontakt.",
+      "uiHint": "In Batch-Analyse: 'Als Job speichern' Button mit Cron-Auswahl (wöchentlich/monatlich) und E-Mail-Eingabe. Job-Liste unter Einstellungen > Automatisierung."
+    },
+    {
+      "id": "qw_tech_stack_lead_filter",
+      "name": "Lead-Filter nach Tech-Stack",
+      "description": "Im Lead-Finder nach erkanntem Tech-Stack filtern (z.B. 'alle WooCommerce-Shops in meiner Kundenliste'). Verbindet Tech-Stack-Erkennung mit Lead-Finder ohne neue Datenquellen.",
+      "uiHint": "Filter-Dropdown im Lead-Finder: 'Technologie' Multi-Select mit bekannten CMS/Shop-Tags. Ergebnisliste zeigt Tech-Badges als Tags."
     }
   ],
   "nextFeature": {
-    "id": "social-media-stats",
-    "name": "Social Media Intelligence",
-    "description": "Vollständige Social-Media-Analyse für jede untersuchte Domain: Automatische Erkennung aller Social-Profile (LinkedIn, X/Twitter, Instagram, Facebook, YouTube, TikTok) via HTML-Parsing und Link-Extraktion. Anzeige von Follower-Zahlen, Posting-Frequenz, Engagement-Rate und letztem Post-Datum über öffentliche APIs und oEmbed-Endpunkte. Vergleich der Social-Präsenz zwischen Wettbewerbern. Komplett in die bestehende Domain-Vollanalyse als neues Tab integriert – kein Breaking Change, geringer Infrastrukturaufwand, sofort sichtbarer Mehrwert für Marketing-Agenturen.",
-    "targetPage": "/analyze",
+    "id": "feat_historical_trends_dashboard",
+    "name": "SEO & Traffic Zeitstrahl",
+    "description": "Automatisches Speichern von wöchentlichen Domain-Snapshots (SEO-Score, Traffic-Schätzung, Keyword-Anzahl, Backlink-Schätzung) für alle gespeicherten Domains. Interaktives Zeitreihen-Chart zeigt Entwicklung über bis zu 52 Wochen. Highlighting von signifikanten Änderungen (Google-Updates, Algorithmus-Shifts) als Annotations. Vergleich zweier Zeiträume (z.B. Q1 vs Q2). Export als CSV/PDF für Kunden-Reporting. Legt die Datenbasis für alle zukünftigen historischen Features ohne externe API-Abhängigkeit.",
+    "targetPage": "/trends",
     "components": [
-      "SocialProfileDetector – HTML-Parser für og:see_also, rel=me, Footer-Links zur Profilerkennung",
-      "SocialMetricsCard – Platform-spezifische Card mit Icon, Follower-Count, Engagement-Rate-Pill und letztem Post-Datum",
-      "SocialPresenceScoreRing – Gewichteter Score 0-100 basierend auf Anzahl aktiver Plattformen und Engagement",
-      "SocialComparisonBar – Horizontale Balkendiagramme für Follower-Vergleich zwischen zwei Domains",
-      "SocialPlatformGrid – Responsive Grid aller erkannten Plattformen mit Status-Badges (Aktiv/Inaktiv/Nicht vorhanden)",
-      "SocialInsightsBanner – KI-generierte Handlungsempfehlungen basierend auf Social-Präsenz-Lücken"
+      "TimelineChart (Recharts LineChart mit Zoom & Pan)",
+      "MetricSelector (SEO-Score / Traffic / Keywords / Backlinks umschaltbar)",
+      "SnapshotDiffBadge (zeigt Delta zur Vorwoche in % mit Pfeil-Icon)",
+      "AlgorithmUpdateAnnotations (vertikale Marker mit Tooltip bei bekannten Google-Updates)",
+      "PeriodCompareToggle (Zeitraum A vs B Overlay-Modus)",
+      "DomainSelectorDropdown (aus gespeicherten Kunden-Domains)",
+      "SnapshotHistoryTable (tabellarische Rohdaten mit Sortierung)",
+      "ExportButton (CSV + PDF mit Zeitreihe)",
+      "AutoMonitorToggle (Snapshot-Scheduling pro Domain aktivieren)"
     ],
-    "navLabel": "Social Intelligence",
-    "navDesc": "Social-Media-Präsenz & Engagement analysieren",
-    "navIcon": "Star"
+    "navLabel": "Zeitstrahl",
+    "navDesc": "SEO & Traffic-Verlauf über Zeit",
+    "navIcon": "BarChart2"
   },
-  "codegenDoneAt": 1777436664336
+  "codegenDoneAt": 1777452713990
 }

@@ -12,12 +12,12 @@ import {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PLATFORMS = [
-  { key: "linkedin",  label: "LinkedIn",    Icon: Linkedin,  color: "#0A66C2" },
-  { key: "twitter",   label: "X / Twitter", Icon: Twitter,   color: "#000000" },
-  { key: "instagram", label: "Instagram",   Icon: Instagram, color: "#E1306C" },
-  { key: "facebook",  label: "Facebook",    Icon: Facebook,  color: "#1877F2" },
-  { key: "youtube",   label: "YouTube",     Icon: Youtube,   color: "#FF0000" },
-  { key: "tiktok",    label: "TikTok",      Icon: Music2,    color: "#010101" },
+  { key: "linkedin",  label: "LinkedIn",    Icon: Linkedin,  color: "#0A66C2", base: "https://www.linkedin.com/company/" },
+  { key: "twitter",   label: "X / Twitter", Icon: Twitter,   color: "#000000", base: "https://x.com/" },
+  { key: "instagram", label: "Instagram",   Icon: Instagram, color: "#E1306C", base: "https://www.instagram.com/" },
+  { key: "facebook",  label: "Facebook",    Icon: Facebook,  color: "#1877F2", base: "https://www.facebook.com/" },
+  { key: "youtube",   label: "YouTube",     Icon: Youtube,   color: "#FF0000", base: "https://www.youtube.com/@" },
+  { key: "tiktok",    label: "TikTok",      Icon: Music2,    color: "#010101", base: "https://www.tiktok.com/@" },
 ];
 
 const MATURITY_LABELS = {
@@ -131,17 +131,21 @@ function FrequencyBar({ postsPerMonth, max = 30 }) {
 
 // ─── PlatformCard ─────────────────────────────────────────────────────────────
 
-function PlatformCard({ platform, profile, metrics }) {
+function PlatformCard({ platform, profile, metrics, onAddHandle }) {
   const { Icon, label, color } = PLATFORMS.find(p => p.key === platform);
-  const has   = !!profile?.url;
-  const days  = daysSince(metrics?.last_post);
-  const act   = activityInfo(days);
+  const has      = !!profile?.url;
+  const loading  = metrics?._loading;
+  const days     = daysSince(metrics?.last_post);
+  const act      = activityInfo(days);
+  const [inputVal, setInputVal] = useState("");
+  const [inputOpen, setInputOpen] = useState(false);
 
   return (
     <div style={{
-      background: C.surface, border: `1px solid ${has ? color + "30" : C.border}`,
+      background: C.surface,
+      border: `1px solid ${has ? color + "30" : C.border}`,
       borderRadius: T.rLg, padding: 16, display: "flex", flexDirection: "column", gap: 10,
-      opacity: has ? 1 : 0.5, position: "relative", overflow: "hidden",
+      position: "relative", overflow: "hidden",
     }}>
       {/* Top color bar */}
       <div style={{
@@ -168,8 +172,8 @@ function PlatformCard({ platform, profile, metrics }) {
             {act.label}
           </div>
         ) : (
-          <div style={{ fontSize: 10, fontWeight: 600, borderRadius: 20, padding: "2px 8px", color: C.textSoft, background: C.border + "60" }}>
-            Nicht gefunden
+          <div style={{ fontSize: 10, fontWeight: 600, borderRadius: 20, padding: "2px 8px", color: "#b45309", background: "#fef3c7" }}>
+            Nicht verlinkt
           </div>
         )}
       </div>
@@ -188,8 +192,16 @@ function PlatformCard({ platform, profile, metrics }) {
             <SourceBadge source={metrics?.source || profile?.source} />
           </div>
 
+          {/* Loading state for manual handle */}
+          {loading && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
+              <RefreshCw size={13} strokeWidth={IW} color={color} style={{ animation: "spin 1s linear infinite" }} />
+              <span style={{ fontSize: 12, color: C.textSoft }}>KI schätzt Metriken…</span>
+            </div>
+          )}
+
           {/* Metrics */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+          {!loading && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
             {[
               { val: fmt(metrics?.followers), lbl: "Follower" },
               { val: metrics?.engagement_rate != null ? (metrics.engagement_rate * 100).toFixed(1) + "%" : "–", lbl: "Engagement" },
@@ -200,15 +212,15 @@ function PlatformCard({ platform, profile, metrics }) {
                 <div style={{ fontSize: 9, color: C.textSoft, marginTop: 2, textTransform: "uppercase", letterSpacing: "0.04em" }}>{lbl}</div>
               </div>
             ))}
-          </div>
+          </div>}
 
           {/* Post frequency bar */}
-          {metrics?.posts_per_month != null && (
+          {!loading && metrics?.posts_per_month != null && (
             <FrequencyBar postsPerMonth={metrics.posts_per_month} />
           )}
 
           {/* Last post */}
-          {metrics?.last_post && (
+          {!loading && metrics?.last_post && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
               <Calendar size={11} strokeWidth={IW} color={C.textSoft} />
               <span style={{ fontSize: 11, color: C.textSoft }}>
@@ -253,8 +265,82 @@ function PlatformCard({ platform, profile, metrics }) {
           )}
         </>
       ) : (
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "8px 0" }}>
-          <span style={{ fontSize: 12, color: C.textSoft }}>Kein Profil auf Website gefunden</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* Explanation */}
+          <div style={{
+            background: "#fef3c720", border: "1px solid #fcd34d40",
+            borderRadius: T.rMd, padding: "10px 12px",
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#92400e", marginBottom: 3 }}>
+              Kein Link auf Website gefunden
+            </div>
+            <div style={{ fontSize: 11, color: "#b45309", lineHeight: 1.5 }}>
+              Das bedeutet nicht, dass kein Profil existiert — nur dass auf der
+              Website kein {label}-Link verlinkt ist.
+            </div>
+          </div>
+
+          {/* Manual handle input */}
+          {inputOpen ? (
+            <div style={{ display: "flex", gap: 6 }}>
+              <div style={{
+                flex: 1, display: "flex", alignItems: "center", gap: 6,
+                padding: "6px 10px", borderRadius: T.rMd,
+                border: `1px solid ${color}50`, background: C.bg, fontSize: 12,
+              }}>
+                <span style={{ color: C.textSoft, fontSize: 13 }}>@</span>
+                <input
+                  autoFocus
+                  value={inputVal}
+                  onChange={e => setInputVal(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && inputVal.trim()) {
+                      onAddHandle(platform, inputVal.trim().replace(/^@/, ""));
+                      setInputOpen(false);
+                      setInputVal("");
+                    }
+                    if (e.key === "Escape") { setInputOpen(false); setInputVal(""); }
+                  }}
+                  placeholder={`${label}-Handle`}
+                  style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 12, color: C.text, fontFamily: FONT }}
+                />
+              </div>
+              <button
+                onClick={() => {
+                  if (inputVal.trim()) onAddHandle(platform, inputVal.trim().replace(/^@/, ""));
+                  setInputOpen(false); setInputVal("");
+                }}
+                style={{
+                  padding: "6px 12px", borderRadius: T.rMd, border: "none",
+                  background: color, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                OK
+              </button>
+              <button
+                onClick={() => { setInputOpen(false); setInputVal(""); }}
+                style={{
+                  padding: "6px 10px", borderRadius: T.rMd, border: `1px solid ${C.border}`,
+                  background: C.surface, color: C.textSoft, fontSize: 12, cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setInputOpen(true)}
+              style={{
+                padding: "7px 12px", borderRadius: T.rMd,
+                border: `1px dashed ${color}50`, background: color + "08",
+                color: color, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+              }}
+            >
+              <span style={{ fontSize: 15, lineHeight: 1 }}>+</span>
+              Handle manuell eingeben
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -428,6 +514,9 @@ export default function SocialMediaIntelligence() {
   const [compError,        setCompError]        = useState(null);
   const [insightsLoading,  setInsightsLoading]  = useState(false);
   const [insights,         setInsights]         = useState(null);
+  // Manually added handles for platforms not found by crawl
+  const [manualHandles,    setManualHandles]    = useState({});
+  const [manualLoading,    setManualLoading]    = useState({});
 
   const inputRef = useRef(null);
 
@@ -495,8 +584,51 @@ export default function SocialMediaIntelligence() {
     }
   }, [domain, result, competitorDomain]);
 
-  const activePlatforms = result
-    ? PLATFORMS.filter(p => result.profiles?.[p.key]?.url)
+  // Manual handle: fetch AI estimate for a single platform
+  const handleAddHandle = useCallback(async (platform, handle) => {
+    if (!handle || !result) return;
+    const plat = PLATFORMS.find(p => p.key === platform);
+    if (!plat) return;
+
+    setManualHandles(prev => ({
+      ...prev,
+      [platform]: { url: `${plat.base || "https://"}${handle}`, handle, source: "manual" },
+    }));
+    setManualLoading(prev => ({ ...prev, [platform]: true }));
+
+    try {
+      const d = domain.trim().replace(/^https?:\/\/(www\.)?/, "").split("/")[0];
+      const prompt = `Estimate social media metrics for ${platform} handle "@${handle}" of the company "${d}".
+Return ONLY valid JSON: { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO|null>" }`;
+      const r = await fetch("/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], max_tokens: 200 }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const text = data.content?.[0]?.text ?? data.choices?.[0]?.message?.content ?? "";
+        const m = text.match(/\{[\s\S]*\}/);
+        if (m) {
+          const metrics = JSON.parse(m[0]);
+          setResult(prev => ({
+            ...prev,
+            metrics: { ...prev.metrics, [platform]: { ...metrics, source: "ai_estimate_real_handle" } },
+          }));
+        }
+      }
+    } catch {}
+    setManualLoading(prev => ({ ...prev, [platform]: false }));
+  }, [domain, result]);
+
+  // Merge manual handles into result profiles for display
+  const displayProfiles = result
+    ? { ...result.profiles, ...manualHandles }
+    : null;
+
+  const activePlatforms = displayProfiles
+    ? PLATFORMS.filter(p => displayProfiles[p.key]?.url)
     : [];
 
   const maturityInfo = result?.maturity ? MATURITY_LABELS[result.maturity] : null;
@@ -638,8 +770,11 @@ export default function SocialMediaIntelligence() {
               <PlatformCard
                 key={key}
                 platform={key}
-                profile={result.profiles?.[key]}
-                metrics={result.metrics?.[key]}
+                profile={displayProfiles?.[key]}
+                metrics={manualLoading[key]
+                  ? { _loading: true }
+                  : result.metrics?.[key]}
+                onAddHandle={handleAddHandle}
               />
             ))}
           </div>

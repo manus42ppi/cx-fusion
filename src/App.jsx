@@ -12,9 +12,9 @@ const ClientsPage   = lazy(() => import("./pages/ClientsPage.jsx"));
 const ContentPage   = lazy(() => import("./pages/ContentPage.jsx"));
 const ImprovePage   = lazy(() => import("./pages/ImprovePage.jsx"));
 const FeaturesPage  = lazy(() => import("./pages/FeaturesPage.jsx"));
-const FeatSchemaValidatorPage = lazy(() => import("./pages/feat_feat-schema-validator.jsx"));
+const FeatSchemaValidatorPage  = lazy(() => import("./pages/feat_feat-schema-validator.jsx"));
+const SocialMediaStatsPage     = lazy(() => import("./pages/feat_social-media-stats.jsx"));
 // ─── AUTO_IMPORTS_START ───────────────────────────────────────────────────────
-const SocialMediaStatsPage = lazy(() => import("./pages/feat_social-media-stats.jsx"));
 // ─── AUTO_IMPORTS_END ─────────────────────────────────────────────────────────
 const BatchPage = lazy(() => import("./pages/BatchPage.jsx"));
 
@@ -38,8 +38,8 @@ function Router() {
     improve:   <ImprovePage />,
     features:  <FeaturesPage />,
     "feat-schema-validator": <FeatSchemaValidatorPage />,
+    "social-media-stats":    <SocialMediaStatsPage />,
 // ─── AUTO_ROUTES_START ────────────────────────────────────────────────────────
-    "social-media-stats": <SocialMediaStatsPage />,
 // ─── AUTO_ROUTES_END ──────────────────────────────────────────────────────────
     batch:     <BatchPage />,
   };
