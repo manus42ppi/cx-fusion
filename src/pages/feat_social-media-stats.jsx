@@ -58,11 +58,15 @@ async function callAI(prompt) {
   });
   if (!res.ok) throw new Error(`AI call failed: ${res.status}`);
   const d = await res.json();
-  return d.content ?? d.choices?.[0]?.message?.content ?? "";
+  // Anthropic API: content is an array of blocks → extract text
+  // OpenAI-compat fallback: choices[0].message.content
+  const raw = d.content?.[0]?.text ?? d.choices?.[0]?.message?.content ?? "";
+  return typeof raw === "string" ? raw : JSON.stringify(raw);
 }
 
 function parseJSON(raw) {
-  const m = raw.match(/\{[\s\S]*\}/);
+  if (raw && typeof raw === "object") return raw;
+  const m = String(raw).match(/\{[\s\S]*\}/);
   if (!m) throw new Error("No JSON in AI response");
   return JSON.parse(m[0]);
 }
