@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn, Badge } from "../components/ui/index.jsx";
 import AnalysisProgress from "../components/ui/AnalysisProgress.jsx";
-import { saveSchemaReport } from "../utils/api.js";
+import { useApp } from "../context/AppContext.jsx";
 import {
   CheckCircle, AlertTriangle, XCircle, Code2, Shield,
   ChevronDown, ChevronUp, Zap, Globe, Search,
@@ -157,6 +157,7 @@ const LOADING_STEPS = [
 const EXAMPLES = ["shopify.com", "wikipedia.org", "airbnb.com", "github.com"];
 
 export default function FeatSchemaValidatorPage() {
+  const { persistSchemaReport } = useApp();
   const [domain, setDomain]   = useState("");
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
@@ -169,8 +170,8 @@ export default function FeatSchemaValidatorPage() {
     try {
       const data = await callValidate(d);
       setResult(data);
-      // Auto-save under the domain so it appears in ClientsPage
-      try { saveSchemaReport(d, data); } catch {}
+      // Auto-save → aktualisiert auch den Context-State sofort (ClientsPage zeigt Report direkt)
+      try { persistSchemaReport(d, data); } catch {}
     } catch (e) {
       setError(e.message || "Analyse fehlgeschlagen");
     }

@@ -2,7 +2,6 @@ import React, { useState, useCallback, useRef } from "react";
 import { C, T, FONT, FONT_DISPLAY, IW } from "../constants/colors.js";
 import { Card, Btn } from "../components/ui/index.jsx";
 import { useApp } from "../context/AppContext.jsx";
-import { saveSocialReport } from "../utils/api.js";
 import {
   Linkedin, Twitter, Instagram, Facebook, Youtube, Music2,
   Globe, Search, Users, Calendar, Activity, Sparkles,
@@ -503,7 +502,7 @@ Return ONLY valid JSON (no markdown):
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function SocialMediaIntelligence() {
-  useApp();
+  const { persistSocialReport } = useApp();
 
   const [domain,           setDomain]           = useState("");
   const [competitorDomain, setCompetitorDomain] = useState("");
@@ -541,8 +540,8 @@ export default function SocialMediaIntelligence() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setResult(data);
-      // Persist to client history (fire-and-forget)
-      try { saveSocialReport(d, data); } catch {}
+      // Persist → aktualisiert Context-State sofort (ClientsPage zeigt Report direkt)
+      try { persistSocialReport(d, data); } catch {}
 
       // Load AI insights after main data
       setInsightsLoading(true);

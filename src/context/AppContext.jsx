@@ -7,7 +7,7 @@ import {
   loadSchemaReportsSync, loadSchemaReports,
   loadSocialReportsSync, loadSocialReports,
   loadClientHistorySync, loadClientHistory,
-  saveReport, saveContentReport,
+  saveReport, saveContentReport, saveSchemaReport, saveSocialReport,
   uid,
 } from "../utils/api.js";
 
@@ -113,6 +113,18 @@ export function AppProvider({ children }) {
     loadClientHistory().then(h => setClientHistory(h));
   }, []);
 
+  const persistSchemaReport = useCallback((domain, data) => {
+    saveSchemaReport(domain, data);
+    setSchemaReports(prev => ({ ...prev, [domain]: { ...data, savedAt: new Date().toISOString() } }));
+    loadClientHistory().then(h => setClientHistory(h));
+  }, []);
+
+  const persistSocialReport = useCallback((domain, data) => {
+    saveSocialReport(domain, data);
+    setSocialReports(prev => ({ ...prev, [domain]: { ...data, savedAt: new Date().toISOString() } }));
+    loadClientHistory().then(h => setClientHistory(h));
+  }, []);
+
   const ctxValue = useMemo(() => ({
     // Auth
     isLoaded,
@@ -130,8 +142,8 @@ export function AppProvider({ children }) {
     pendingDomain, setPendingDomain,
     reports, persistReport,
     contentReports, persistContentReport,
-    schemaReports,
-    socialReports,
+    schemaReports, persistSchemaReport,
+    socialReports, persistSocialReport,
     clientHistory,
   }), [
     isLoaded, user, demoUser, handleLogout,
@@ -142,8 +154,8 @@ export function AppProvider({ children }) {
     pendingDomain, setPendingDomain,
     reports, persistReport,
     contentReports, persistContentReport,
-    schemaReports,
-    socialReports,
+    schemaReports, persistSchemaReport,
+    socialReports, persistSocialReport,
     clientHistory,
   ]);
 
