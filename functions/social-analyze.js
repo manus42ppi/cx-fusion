@@ -201,37 +201,45 @@ async function enrichWithAI(origin, domain, crawledProfiles, realMetrics, ogData
     .map(([p, d]) => `  ${p}: ${JSON.stringify(d)}`)
     .join("\n") || "  (no real data retrieved)";
 
-  const prompt = `You are a social media intelligence analyst. I have REAL crawled data from the company website for domain "${domain}".
+  const prompt = `Du bist ein Social-Media-Analyst. Du hast ECHTE gecrawlte Daten von der Website der Domain "${domain}".
 
-Company info from website:
-  Title: ${ogData?.title || domain}
-  Description: ${ogData?.description || "not available"}
+Unternehmensdaten von der Website:
+  Titel: ${ogData?.title || domain}
+  Beschreibung: ${ogData?.description || "nicht verfügbar"}
 
-REAL social profiles found by crawling their website:
+ECHTE Social-Profile (per Website-Crawl gefunden):
 ${foundList}
 
-REAL metrics from actual data sources (YouTube RSS, LinkedIn public page):
+ECHTE Metriken aus echten Datenquellen (YouTube RSS, LinkedIn Public):
 ${realList}
 
-Task: Fill in ALL missing metrics with your best estimates based on the company size, industry, and any context you know about these specific handles. For platforms NOT found via crawl, still estimate if the company likely has a profile.
+Aufgabe: Fehlende Metriken auf Basis von Unternehmensgröße, Branche und bekanntem Kontext schätzen. Für nicht gecrawlte Plattformen: schätzen ob Profil wahrscheinlich existiert.
 
-Return ONLY valid JSON (no markdown):
+"ai_summary" Schreibregel – STRIKT:
+• Kurze Sätze, max. 12 Wörter. Aufteilen wenn länger.
+• Mit konkreter Zahl beginnen ("3 Plattformen aktiv.", "LinkedIn: 1.200 Follower.")
+• Imperativ für Empfehlungen ("Erstelle...", "Schalte ein...", "Poste...")
+• VERBOTEN: ganzheitlich, optimieren, zielgerichtet, nachhaltig, maßgeblich, "sollte", "es gilt", "wichtig", "effektiv", "bietet", "umfassend"
+• Beispiel GUT: "LinkedIn: 1.200 Follower, 8 Posts/Monat. YouTube-Kanal inaktiv seit 6 Monaten. Starte Instagram — Branche hat 4,2% Engagement."
+• Beispiel SCHLECHT: "Das Unternehmen sollte seine Social-Media-Präsenz ganzheitlich optimieren und nachhaltig ausbauen."
+
+Antworte NUR mit gültigem JSON (kein Markdown):
 {
   "metrics": {
-    "linkedin":  { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" },
-    "twitter":   { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" },
-    "instagram": { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" },
-    "facebook":  { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" },
-    "youtube":   { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" },
-    "tiktok":    { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-date|null>" }
+    "linkedin":  { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" },
+    "twitter":   { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" },
+    "instagram": { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" },
+    "facebook":  { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" },
+    "youtube":   { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" },
+    "tiktok":    { "followers": <int|null>, "posts_per_month": <int|null>, "engagement_rate": <0.001-0.1|null>, "last_post": "<ISO-Datum|null>" }
   },
   "score": <0-100>,
   "company_type": "<B2B|B2C|Mixed>",
   "primary_platform": "<platform key>",
   "company_size": "<startup|smb|mid_market|enterprise>",
-  "industry": "<German industry name>",
+  "industry": "<Branche auf Deutsch>",
   "maturity": "<beginner|developing|established|leader>",
-  "ai_summary": "<2-3 sentences in German summarizing the social media presence>"
+  "ai_summary": "<2-3 Sätze auf Deutsch – konkret, direkt, mit Zahlen, kein KI-Jargon>"
 }`;
 
   try {

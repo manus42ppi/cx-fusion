@@ -258,7 +258,11 @@ Gib exakt dieses JSON zurück (kein Markdown, keine Erklärungen):
     "trafficConfidence": "low"|"medium"|"high"
   }
 }
-Für trafficHistory: genau 8 Einträge für die letzten 8 Monate (aktuellster zuerst).`;
+Für trafficHistory: genau 8 Einträge für die letzten 8 Monate (aktuellster zuerst).
+
+SELBST-REVIEW vor der Ausgabe (intern durchführen, NICHT ausgeben):
+Prüfe jedes Textfeld: (a) Sätze ≤12 Wörter? (b) Empfehlungen im Imperativ? (c) Kein verbotenes Wort? (d) Beginnt mit Fakt/Zahl?
+Falls nein → sofort korrigieren. Erst danach das JSON ausgeben.`;
 
     const aiRes = await fetch(`${origin}/ai`, {
       method: "POST",
@@ -266,7 +270,15 @@ Für trafficHistory: genau 8 Einträge für die letzten 8 Monate (aktuellster zu
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 4096,
-        system: "Du bist ein Web-Analytics-Experte. Antworte IMMER als valides JSON ohne Markdown-Codeblöcke. Erfinde keine Fakten – nutze ausschließlich die bereitgestellten Daten und den tatsächlichen Homepage-Inhalt.",
+        system: `Du bist ein Web-Analytics-Experte. Antworte IMMER als valides JSON ohne Markdown-Codeblöcke. Erfinde keine Fakten – nutze ausschließlich die bereitgestellten Daten und den tatsächlichen Homepage-Inhalt.
+
+SCHREIBSTIL – gilt für ALLE Textfelder (summary, audienceProfile, trendReason, strengths, weaknesses, recommendations, assessment):
+• Kurze Sätze: max. 12 Wörter. Längere Sätze immer aufteilen.
+• Empfehlungen ausnahmslos im Imperativ: "Erstelle…", "Schalte ein…", "Reduziere auf…", "Teste…", "Messe…"
+• Beginne mit Zahl oder konkretem Fakt – nie mit Beobachtung oder Einleitung
+• Kein Passiv ("sollte berücksichtigt werden" → umformulieren)
+• VERBOTENE WÖRTER – führen zu schlechtem Ergebnis: ganzheitlich, optimieren, optimiert, zielgerichtet, nachhaltig, maßgeblich, entscheidend, "wichtig zu beachten", "es gilt", "es ist unerlässlich", "spielen eine wichtige Rolle", "im Bereich", "bietet zahlreiche", "vielfältige", "umfassend", "effektiv", "effizient", "sollte", "können"
+• GUT: "PageRank 3/10. Schalte strukturierte Daten (Schema.org) ein – steigert Rich-Snippet-Rate." SCHLECHT: "Es ist wichtig, die SEO-Maßnahmen ganzheitlich zu optimieren und nachhaltig zu verbessern."`,
         messages: [{ role: "user", content: prompt }],
       }),
     });

@@ -549,54 +549,68 @@ export default function ContentPage() {
 
       const prompt = `Analysiere die folgenden ECHTEN Inhalte der Website ${d}. Basiere deine Analyse AUSSCHLIESSLICH auf den bereitgestellten Texten — verwende KEIN Vorwissen über diese Domain oder dieses Unternehmen.\n\n${contentBlock}\n\nGib eine vollständige Content-Analyse zurück.`;
 
-      const raw = await aiCall(
-        [{ role: "user", content: prompt }],
-        `Du bist ein Content-Analyse-Experte. Analysiere NUR die bereitgestellten Texte — NIEMALS eigenes Vorwissen über Domains oder Unternehmen verwenden. Wenn du eine Domain kennst, ignoriere dieses Wissen vollständig und arbeite ausschließlich mit den gelieferten Inhalten. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown.
+      const systemPrompt = `Du bist ein Content-Analyse-Experte. Analysiere NUR die bereitgestellten Texte — NIEMALS eigenes Vorwissen über Domains oder Unternehmen verwenden. Wenn du eine Domain kennst, ignoriere dieses Wissen vollständig und arbeite ausschließlich mit den gelieferten Inhalten. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown.
+
+SCHREIBSTIL – gilt für alle Textfelder (consistencyNote, readabilityNote, targetAudience, strengths, weaknesses, recommendations):
+• Max. 12 Wörter pro Satz. Längere Sätze aufteilen.
+• Empfehlungen: Imperativ ("Erstelle", "Kürze", "Teste", "Messe", "Schalte ein")
+• Mit Zahl oder konkretem Fakt beginnen – nie mit allgemeiner Beobachtung
+• Kein Passiv ("sollte berücksichtigt werden" → konkret umformulieren)
+• VERBOTEN: ganzheitlich, optimieren, zielgerichtet, nachhaltig, maßgeblich, entscheidend, "wichtig zu beachten", "es gilt", "es ist unerlässlich", "spielen eine wichtige Rolle", "bietet", "umfassend", "effektiv", "sollte", "können"
+• GUT: "18 von 25 Artikeln unter 500 Wörter. Erstelle 3 Longreads à 1500 Wörter." SCHLECHT: "Es ist wichtig, den Content ganzheitlich zu optimieren."
 
 Antworte NUR mit diesem JSON-Schema:
 {
   "hasFeed": boolean,
   "articleCount": number,
-  "pubFrequency": string,          // z.B. "3–5 Artikel/Woche"
-  "contentTypes": string[],        // z.B. ["Nachrichten","Reportagen","Kommentare"]
-  "primaryTone": string,           // Hauptton: sachlich/informativ/professionell/technisch/analytisch/humorvoll/emotional/meinungsstark/unterhaltend/werblich
-  "tones": string[],               // alle erkannten Töne (max 4)
-  "sentiment": {
-    "positiv": number,             // Prozent 0-100
-    "neutral": number,
-    "negativ": number
-  },
-  "topics": [                      // Top-Themen-Cluster (max 8)
-    { "label": string, "count": number, "color": string }
-  ],
-  "consistencyScore": number,      // 0-100 wie einheitlich ist der Schreibstil
-  "consistencyNote": string,       // Erklärung des Scores
-  "readability": string,           // "einfach" | "mittel" | "komplex"
+  "pubFrequency": string,
+  "contentTypes": string[],
+  "primaryTone": string,
+  "tones": string[],
+  "sentiment": { "positiv": number, "neutral": number, "negativ": number },
+  "topics": [{ "label": string, "count": number, "color": string }],
+  "consistencyScore": number,
+  "consistencyNote": string,
+  "readability": string,
   "readabilityNote": string,
   "targetAudience": string,
-  "styleCharacteristics": string[], // z.B. ["kurze Sätze","faktenbasiert","Bullet-Points"]
-  "articles": [                    // Artikel-Analyse (max 20) — WICHTIG: idx und url aus dem Input [IDX:N] und URL: übernehmen!
-    {
-      "idx": number,               // IDX-Nummer aus dem Input [IDX:N], z.B. 0, 1, 2 ...
-      "url": string,               // URL aus dem Input (URL: ...), leer wenn nicht vorhanden
-      "title": string,
-      "tone": string,
-      "sentiment": "positiv"|"neutral"|"negativ",
-      "isOutlier": boolean,
-      "outlierReason": string|null
-    }
-  ],
-  "outliers": [                    // Ausreißer mit Erklärung (max 5)
-    { "title": string, "reason": string }
-  ],
-  "strengths": string[],           // Content-Stärken (max 4)
-  "weaknesses": string[],          // Content-Schwächen (max 4)
-  "recommendations": string[]      // Konkrete Empfehlungen (max 5)
-}`
-      );
+  "styleCharacteristics": string[],
+  "articles": [{ "idx": number, "url": string, "title": string, "tone": string, "sentiment": "positiv"|"neutral"|"negativ", "isOutlier": boolean, "outlierReason": string|null }],
+  "outliers": [{ "title": string, "reason": string }],
+  "strengths": string[],
+  "weaknesses": string[],
+  "recommendations": string[]
+}`;
+
+      const raw = await aiCall([{ role: "user", content: prompt }], systemPrompt);
 
       const parsed = parseJSON(raw);
       if (!parsed) throw new Error("KI-Antwort konnte nicht verarbeitet werden.");
+
+      // ── Option B: Sharpening pass – refine text fields only ────────────────
+      try {
+        const textFields = {
+          consistencyNote:   parsed.consistencyNote,
+          readabilityNote:   parsed.readabilityNote,
+          targetAudience:    parsed.targetAudience,
+          strengths:         parsed.strengths,
+          weaknesses:        parsed.weaknesses,
+          recommendations:   parsed.recommendations,
+        };
+        const sharpenRaw = await aiCall(
+          [{ role: "user", content: `Überarbeite diese Analysetexte nach STRIKTEN Regeln. Gib exakt dieselbe JSON-Struktur zurück.\n\n${JSON.stringify(textFields)}\n\nREGELN:\n1. Max. 12 Wörter/Satz – teile auf\n2. Empfehlungen: Imperativ ("Erstelle", "Kürze", "Teste", "Messe")\n3. Mit konkretem Wert/Fakt beginnen\n4. Kein Passiv\n5. VERBOTEN: ganzheitlich, optimieren, zielgerichtet, nachhaltig, maßgeblich, entscheidend, wichtig zu beachten, es gilt, es ist unerlässlich, spielen eine wichtige Rolle, bietet, umfassend, effektiv, sollte` }],
+          "Du bist ein Text-Editor. Antworte NUR mit gültigem JSON. Keine Erklärungen."
+        );
+        const sharpened = parseJSON(sharpenRaw);
+        if (sharpened) {
+          if (sharpened.consistencyNote)       parsed.consistencyNote     = sharpened.consistencyNote;
+          if (sharpened.readabilityNote)       parsed.readabilityNote     = sharpened.readabilityNote;
+          if (sharpened.targetAudience)        parsed.targetAudience      = sharpened.targetAudience;
+          if (sharpened.strengths?.length)     parsed.strengths           = sharpened.strengths;
+          if (sharpened.weaknesses?.length)    parsed.weaknesses          = sharpened.weaknesses;
+          if (sharpened.recommendations?.length) parsed.recommendations   = sharpened.recommendations;
+        }
+      } catch {} // sharpening optional – scheitert lautlos
 
       // articles: feed.items as fallback; ...parsed overrides with AI-analyzed articles (with tone/sentiment)
       const resultData = { domain: d, feedUrl: feed.feedUrl, hasFeed, hasWebContent, webPageCount: webPages.length, dataSource, feedItems: feed.items, webPages, articles: feed.items, ...parsed };

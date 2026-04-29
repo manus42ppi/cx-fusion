@@ -398,14 +398,22 @@ const StratModal = memo(function StratModal({ client, reports, contentReports, s
 
     const prompt = `Du bist ein Digital-Marketing-Stratege. Erstelle einen kompakten Strategieplan für "${client.name}" (${client.domain}).
 
-Daten:
+Analysedaten:
 ${JSON.stringify(dataSummary)}
 
-WICHTIG: Antworte NUR mit diesem JSON. Alle Textwerte MAXIMAL 20 Wörter. Genau 3 Prioritäten.
+SCHREIBSTIL – STRIKT für alle Textfelder:
+• Max. 12 Wörter/Satz. Aufteilen wenn länger.
+• Empfehlungen: Imperativ ("Erstelle", "Schalte ein", "Reduziere", "Teste", "Messe")
+• Mit konkreter Zahl beginnen statt mit Beobachtung
+• VERBOTEN: ganzheitlich, optimieren, zielgerichtet, nachhaltig, maßgeblich, entscheidend, "wichtig zu beachten", "es gilt", "bietet", "umfassend", "effektiv", "sollte"
+• Beispiel GUT: "Traffic: 1.200/Mo. Schalte Google Ads (Budget 500€) ein — Ziel 2.000/Mo."
+• Beispiel SCHLECHT: "Es ist wichtig, die Website ganzheitlich zu optimieren und den Traffic nachhaltig zu steigern."
+
+Antworte NUR mit diesem JSON. Genau 3 Prioritäten. label: "gut"|"ausbaufähig"|"kritisch". effort: "low"|"medium"|"high".
 
 {"executive_summary":"","current_score":{"overall":0,"label":"gut"},"priorities":[{"rank":1,"category":"traffic","title":"","problem":"","action":"","impact":"","timeline":"","effort":"low","kpis":[""]},{"rank":2,"category":"content","title":"","problem":"","action":"","impact":"","timeline":"","effort":"medium","kpis":[""]},{"rank":3,"category":"technical","title":"","problem":"","action":"","impact":"","timeline":"","effort":"high","kpis":[""]}],"forecast_90_days":"","quick_wins":["","",""]}
 
-Fülle alle Felder mit echten Daten. label ist "gut", "ausbaufähig" oder "kritisch". effort ist "low", "medium" oder "high". Kein Text außerhalb des JSON.`;
+Kein Text außerhalb des JSON.`;
 
     try {
       abortRef.current = new AbortController();
@@ -437,9 +445,57 @@ Fülle alle Felder mit echten Daten. label ist "gut", "ausbaufähig" oder "kriti
         }
         if (!parsed) throw new Error("Der Strategieplan konnte nicht vollständig geladen werden. Bitte erneut generieren.");
       }
+      // ── Option B: Sharpening pass – refine all text fields ────────────────
+      let finalPlan = parsed;
+      try {
+        const textFields = {
+          executive_summary: parsed.executive_summary,
+          forecast_90_days:  parsed.forecast_90_days,
+          quick_wins:        parsed.quick_wins,
+          priorities: (parsed.priorities || []).map(p => ({
+            rank: p.rank, title: p.title, problem: p.problem,
+            action: p.action, impact: p.impact,
+          })),
+        };
+        const sr = await fetch("/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [{ role: "user", content: `Überarbeite diese Strategietexte nach STRIKTEN Regeln. Gib exakt dieselbe JSON-Struktur zurück.\n\n${JSON.stringify(textFields)}\n\nREGELN:\n1. Max. 12 Wörter/Satz – aufteilen\n2. Empfehlungen: Imperativ ("Erstelle", "Schalte", "Reduziere", "Teste")\n3. Mit konkreter Zahl beginnen\n4. Kein Passiv\n5. VERBOTEN: ganzheitlich, optimieren, zielgerichtet, nachhaltig, maßgeblich, entscheidend, wichtig zu beachten, es gilt, bietet, umfassend, effektiv, sollte` }],
+            max_tokens: 1200,
+          }),
+          signal: AbortSignal.timeout(40000),
+        });
+        if (sr.ok) {
+          const sd = await sr.json();
+          const st = sd.content?.[0]?.text ?? sd.choices?.[0]?.message?.content ?? "";
+          const sm = st.match(/\{[\s\S]*\}/);
+          if (sm) {
+            const sh = JSON.parse(sm[0]);
+            finalPlan = { ...parsed };
+            if (sh.executive_summary) finalPlan.executive_summary = sh.executive_summary;
+            if (sh.forecast_90_days)  finalPlan.forecast_90_days  = sh.forecast_90_days;
+            if (sh.quick_wins?.length) finalPlan.quick_wins        = sh.quick_wins;
+            if (sh.priorities?.length) {
+              finalPlan.priorities = (parsed.priorities || []).map((p, i) => {
+                const sp = sh.priorities?.[i];
+                if (!sp) return p;
+                return {
+                  ...p,
+                  title:   sp.title   || p.title,
+                  problem: sp.problem || p.problem,
+                  action:  sp.action  || p.action,
+                  impact:  sp.impact  || p.impact,
+                };
+              });
+            }
+          }
+        }
+      } catch {} // sharpening optional – scheitert lautlos
+
       stopProgress();
-      setPlan(parsed);
-      try { localStorage.setItem(storageKey, JSON.stringify(parsed)); } catch {}
+      setPlan(finalPlan);
+      try { localStorage.setItem(storageKey, JSON.stringify(finalPlan)); } catch {}
     } catch (err) {
       stopProgress();
       if (err.name !== "AbortError") setError(err.message || "Fehler beim Generieren – bitte erneut versuchen.");
