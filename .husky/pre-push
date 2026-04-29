@@ -1,0 +1,21 @@
+#!/bin/sh
+# CX Fusion – pre-push hook
+# Runs full test suite + build check before pushing.
+# Prevents broken builds from reaching Cloudflare Pages.
+
+echo "🚀 Running pre-push checks..."
+echo ""
+
+echo "▶ Structural checks..."
+node scripts/pre-deploy-check.js || exit 1
+
+echo ""
+echo "▶ Tests..."
+npm test || exit 1
+
+echo ""
+echo "▶ Build check..."
+npm run build || exit 1
+
+echo ""
+echo "✅ All pre-push checks passed — pushing to remote."

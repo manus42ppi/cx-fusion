@@ -5,16 +5,18 @@ export async function onRequestPost(ctx) {
     const { domain } = await ctx.request.json();
     if (!domain) return new Response(JSON.stringify({ error: "domain required" }), { status: 400, headers: CORS });
 
+    // Use /ai proxy (same-origin) — never call api.anthropic.com directly
+    const origin = new URL(ctx.request.url).origin;
+
     const aiBody = JSON.stringify({
       model: "claude-sonnet-4-6", max_tokens: 1500,
       messages: [{ role: "user", content: `Führe einen Quick-Scan der Domain "${domain}" durch. Antworte NUR mit JSON:
 {"domain":"${domain}","reachable":true,"redirectsToWww":boolean,"hasHttps":boolean,"hasCookieBanner":boolean,"hasNewsletter":boolean,"hasShop":boolean,"hasBlog":boolean,"hasChatbot":boolean,"hasAnalytics":boolean,"hasSocialLinks":boolean,"mobileFriendly":"yes"|"likely"|"unknown","estimatedLoadTime":"fast"|"medium"|"slow","overallHealth":"good"|"fair"|"poor","notes":string[]}` }],
     });
 
-    const apiKey = ctx.env.ANTHROPIC_API_KEY;
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch(`${origin}/ai`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      headers: { "Content-Type": "application/json" },
       body: aiBody,
     });
     const data = await res.json();

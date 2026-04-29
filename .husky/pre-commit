@@ -1,0 +1,15 @@
+#!/bin/sh
+# CX Fusion – pre-commit hook
+# Runs structural validation before every commit.
+# This is fast (<3s) and catches the most common mistakes.
+
+echo "🔍 Running pre-commit checks..."
+node scripts/pre-deploy-check.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-commit checks failed. Fix the errors above and try again."
+  echo "   To skip (emergency only): git commit --no-verify"
+  exit 1
+fi
+echo "✅ Pre-commit checks passed."
