@@ -345,7 +345,6 @@ async function aiAuditSeo(domain, pages, aiCallFn) {
   }
 
   if (!parsed) {
-    console.error("[SEO Audit] unparseable response:", raw?.slice(0, 400));
     throw new Error("SEO-Audit-Antwort konnte nicht verarbeitet werden.");
   }
   return parsed;

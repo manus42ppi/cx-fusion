@@ -305,7 +305,8 @@ function _addToHistory(domain, type, savedAt, data) {
     summary = { schemaCount: data?.pages?.reduce((s, p) => s + (p.schemas?.length ?? 0), 0) ?? 0, overallScore: data?.overallScore };
   } else if (type === "social") {
     const activeCount = Object.values(data?.profiles || {}).filter(p => p?.url).length;
-    summary = { score: data?.score, activeCount, primaryPlatform: data?.primary_platform };
+    const topFollowers = Math.max(...Object.values(data?.metrics || {}).map(m => m?.followers ?? 0), 0) || null;
+    summary = { score: data?.score, activeCount, primaryPlatform: data?.primary_platform, topFollowers };
   } else {
     summary = {};
   }

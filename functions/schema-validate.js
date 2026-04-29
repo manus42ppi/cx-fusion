@@ -221,6 +221,7 @@ Regeln:
       }),
     });
 
+    if (!aiRes.ok) throw new Error(`KI-Anfrage fehlgeschlagen (${aiRes.status})`);
     const aiData = await aiRes.json();
     const text   = aiData?.content?.[0]?.text || "";
 

@@ -902,7 +902,7 @@ export default function ClientsPage() {
     } else if (type === "content") {
       goNav("content", { domain: client.domain, report: data });
     } else if (type === "schema") {
-      goNav("feat-schema-validator");
+      goNav("feat-schema-validator", { domain: client.domain });
     }
   }, [setActiveReport, goNav]);
 
