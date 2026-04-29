@@ -502,13 +502,15 @@ Return ONLY valid JSON (no markdown):
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function SocialMediaIntelligence() {
-  const { persistSocialReport } = useApp();
+  const { persistSocialReport, pendingDomain, socialReports } = useApp();
+  // Wenn von ClientsPage über "Öffnen" navigiert → gespeicherten Report sofort zeigen
+  const preloaded = pendingDomain ? (socialReports?.[pendingDomain] ?? null) : null;
 
-  const [domain,           setDomain]           = useState("");
+  const [domain,           setDomain]           = useState(pendingDomain || "");
   const [competitorDomain, setCompetitorDomain] = useState("");
   const [loading,          setLoading]          = useState(false);
   const [error,            setError]            = useState(null);
-  const [result,           setResult]           = useState(null);
+  const [result,           setResult]           = useState(preloaded);
   const [compResult,       setCompResult]       = useState(null);
   const [compLoading,      setCompLoading]      = useState(false);
   const [compError,        setCompError]        = useState(null);

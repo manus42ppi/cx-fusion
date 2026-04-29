@@ -157,9 +157,11 @@ const LOADING_STEPS = [
 const EXAMPLES = ["shopify.com", "wikipedia.org", "airbnb.com", "github.com"];
 
 export default function FeatSchemaValidatorPage() {
-  const { persistSchemaReport } = useApp();
-  const [domain, setDomain]   = useState("");
-  const [result, setResult]   = useState(null);
+  const { persistSchemaReport, pendingDomain, schemaReports } = useApp();
+  // Wenn von ClientsPage über "Öffnen" navigiert → gespeicherten Report sofort zeigen
+  const preloaded = pendingDomain ? (schemaReports?.[pendingDomain] ?? null) : null;
+  const [domain, setDomain]   = useState(pendingDomain || "");
+  const [result, setResult]   = useState(preloaded);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
 

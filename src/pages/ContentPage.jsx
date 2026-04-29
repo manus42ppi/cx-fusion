@@ -439,9 +439,11 @@ function computeDuplicates(pages) {
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function ContentPage() {
-  const { activeReport, persistContentReport, pendingDomain } = useApp();
+  const { activeReport, persistContentReport, pendingDomain, contentReports } = useApp();
+  // Wenn von ClientsPage über "Öffnen" navigiert → gespeicherten Report sofort zeigen
+  const preloaded = pendingDomain ? (contentReports?.[pendingDomain] ?? null) : null;
   const [domain, setDomain]   = useState(pendingDomain || activeReport?.domain || "");
-  const [result, setResult]   = useState(null);
+  const [result, setResult]   = useState(preloaded);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
   const [phase, setPhase]     = useState("");

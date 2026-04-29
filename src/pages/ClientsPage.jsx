@@ -912,7 +912,9 @@ export default function ClientsPage() {
     } else if (typeId === "content") {
       goNav("content", { domain: client.domain });
     } else if (typeId === "schema") {
-      goNav("feat-schema-validator");
+      goNav("feat-schema-validator", { domain: client.domain });
+    } else if (typeId === "social") {
+      goNav("social-media-stats", { domain: client.domain });
     }
   }, [goNav]);
 
@@ -925,9 +927,9 @@ export default function ClientsPage() {
     } else if (typeId === "content") {
       goNav("content", { domain: client.domain, report });
     } else if (typeId === "schema") {
-      goNav("feat-schema-validator");
+      goNav("feat-schema-validator", { domain: client.domain });
     } else if (typeId === "social") {
-      goNav("social-media-stats");
+      goNav("social-media-stats", { domain: client.domain });
     }
   }, [reports, contentReports, schemaReports, socialReports, setActiveReport, goNav]);
 
